@@ -11,6 +11,8 @@ Try it out here: [prajun7.github.io/interactive-machine-learning](https://prajun
 ### ✅ Currently Available
 
 - **🏠 Kernelized Regression: House Price Prediction** - Learn how kernel functions work in regression by predicting house prices based on size. Interactively adjust kernel width to see how it affects predictions.
+- **📈 KNN Regression: Interactive Visualization** - Explore K-Nearest Neighbors regression with step-by-step distance calculations and neighbor selection.
+- **🔮 The Kernel Trick: Dimensional Transformation** - Visualize how data transforms from 2D to higher dimensions, making non-linearly separable data linearly separable.
 
 ### 🔜 Coming Soon
 
