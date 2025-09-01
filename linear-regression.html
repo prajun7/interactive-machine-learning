@@ -123,15 +123,65 @@
         font-family: "Courier New", monospace;
       }
 
+      .calculation-steps {
+        margin-top: 20px;
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        border-left: 4px solid #28a745;
+      }
+
+      .calculation-steps h4 {
+        margin: 0 0 15px 0;
+        color: #28a745;
+        font-size: 1.1em;
+      }
+
+      .step-calculation {
+        background: white;
+        padding: 12px;
+        margin: 10px 0;
+        border-radius: 6px;
+        border-left: 3px solid #17a2b8;
+        font-family: "Courier New", monospace;
+        font-size: 0.95em;
+        line-height: 1.6;
+      }
+
+      .step-calculation.final-result {
+        background: #d4edda;
+        border-left-color: #28a745;
+        font-weight: bold;
+        font-size: 1.1em;
+      }
+
       @media (max-width: 768px) {
         .controls-section {
           grid-template-columns: 1fr;
         }
       }
+
+      /* Back button styling */
+      .back-link {
+        text-decoration: none;
+        color: #667eea;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 20px;
+      }
+
+      .back-link:hover {
+        color: #5a67d8;
+        text-decoration: underline;
+      }
     </style>
   </head>
   <body>
     <div class="container">
+      <a href="index.html" class="back-link">← Back to Interactive ML</a>
+
       <h1>Linear Regression: Finding the Best Line</h1>
 
       <div class="chart-container">
@@ -174,6 +224,35 @@
             <strong>Example Prediction:</strong><br />
             House Size: 1500 sq ft<br />
             Predicted Price: $<span id="examplePrediction">275,000</span>
+          </div>
+
+          <div class="calculation-steps">
+            <h4>📊 How the Price is Calculated:</h4>
+            <div class="step-calculation">
+              <strong>Step 1: Use the Linear Equation</strong><br />
+              Price = w₀ + w₁ × HouseSize<br />
+              Price = <span id="biasCalc">50</span> +
+              <span id="weightCalc">0.15</span> × 1500
+            </div>
+            <div class="step-calculation">
+              <strong>Step 2: Perform the Multiplication</strong><br />
+              Price = <span id="biasCalc2">50</span> + (<span id="weightCalc2"
+                >0.15</span
+              >
+              × 1500)<br />
+              Price = <span id="biasCalc3">50</span> +
+              <span id="multResult">225</span>
+            </div>
+            <div class="step-calculation">
+              <strong>Step 3: Add the Results</strong><br />
+              Price = <span id="biasCalc4">50</span> +
+              <span id="multResult2">225</span><br />
+              Price = <span id="finalResult">275</span> (in $1000s)
+            </div>
+            <div class="step-calculation final-result">
+              <strong>Final Result:</strong><br />
+              Price = $<span id="finalPrice">275,000</span>
+            </div>
           </div>
         </div>
 
@@ -297,6 +376,25 @@
         const exampleSize = 1500;
         const examplePrediction = bias + weight * exampleSize;
         document.getElementById("examplePrediction").textContent = Math.round(
+          examplePrediction * 1000
+        ).toLocaleString();
+
+        // Update calculation steps
+        document.getElementById("biasCalc").textContent = bias;
+        document.getElementById("weightCalc").textContent = weight;
+        document.getElementById("biasCalc2").textContent = bias;
+        document.getElementById("weightCalc2").textContent = weight;
+        document.getElementById("biasCalc3").textContent = bias;
+        document.getElementById("multResult").textContent = Math.round(
+          weight * exampleSize
+        );
+        document.getElementById("biasCalc4").textContent = bias;
+        document.getElementById("multResult2").textContent = Math.round(
+          weight * exampleSize
+        );
+        document.getElementById("finalResult").textContent =
+          Math.round(examplePrediction);
+        document.getElementById("finalPrice").textContent = Math.round(
           examplePrediction * 1000
         ).toLocaleString();
 
