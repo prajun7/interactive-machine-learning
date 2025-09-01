@@ -1,10 +1,9 @@
-# Kernelized Regression Demo
+# Interactive Machine Learning
 
-An interactive web-based visualization of kernelized regression using Gaussian kernels, featuring real-time parameter adjustment and house price prediction examples.
+An interactive collection of machine learning concepts visualized with examples.
+Play with parameters like k in kNN, explore SVM decision boundaries, and see how different algorithms behave in real-time.
 
-Kernelized regression is a machine learning technique that makes predictions based on similarity. Instead of fitting a straight line through data.
+Try it out here: prajun7.github.io/interactive-machine-learning/
 
-Try it out here: https://prajun7.github.io/kernelized-regression-demo/
-
-Learn more here: https://medium.com/@launch_it/regression-84edc6b1a007
+Learn more here: [https://medium.com/@launch_it/regression-84edc6b1a007](https://medium.com/@launch_it/machine-learning-edda5517068a)
 
