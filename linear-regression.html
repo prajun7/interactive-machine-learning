@@ -155,6 +155,37 @@
         font-size: 1.1em;
       }
 
+      .vector-explanation {
+        margin-top: 20px;
+        padding: 15px;
+        background: #f0f8ff;
+        border-radius: 8px;
+        border-left: 4px solid #007bff;
+      }
+
+      .vector-explanation h5 {
+        margin: 0 0 15px 0;
+        color: #007bff;
+        font-size: 1.1em;
+      }
+
+      .vector-step {
+        background: white;
+        padding: 12px;
+        margin: 10px 0;
+        border-radius: 6px;
+        border-left: 3px solid #007bff;
+        font-family: "Courier New", monospace;
+        font-size: 0.9em;
+        line-height: 1.6;
+      }
+
+      .vector-step.key-insight {
+        background: #fff3cd;
+        border-left-color: #ffc107;
+        font-weight: bold;
+      }
+
       @media (max-width: 768px) {
         .controls-section {
           grid-template-columns: 1fr;
@@ -290,6 +321,45 @@
             where w = [<span id="vectorW">50, 0.15</span>]<br />
             and x = [1, HouseSize]
           </div>
+
+          <div class="vector-explanation">
+            <h5>🔍 Understanding the Vector Form:</h5>
+
+            <div class="vector-step">
+              <strong>Step 1: Vector Dimensions</strong><br />
+              w = [<span id="w1">50</span>, <span id="w2">0.15</span>] is a
+              <strong>row vector</strong> (1×2)<br />
+              x = [1, HouseSize] is a <strong>column vector</strong> (2×1)
+            </div>
+
+            <div class="vector-step">
+              <strong>Step 2: Why Transpose w?</strong><br />
+              • w is [<span id="w1t">50</span>, <span id="w2t">0.15</span>] (row
+              vector)<br />
+              • wᵀ becomes [[<span id="w1tt">50</span>], [<span id="w2tt"
+                >0.15</span
+              >]] (column vector)<br />
+              • This allows matrix multiplication: (1×2) × (2×1) = (1×1) =
+              scalar
+            </div>
+
+            <div class="vector-step">
+              <strong>Step 3: Matrix Multiplication</strong><br />
+              wᵀx = [<span id="w1tm">50</span> <span id="w2tm">0.15</span>] ×
+              [1, HouseSize]ᵀ<br />
+              = <span id="w1tm2">50</span>×1 +
+              <span id="w2tm2">0.15</span>×HouseSize<br />
+              = <span id="w1tm3">50</span> +
+              <span id="w2tm3">0.15</span>×HouseSize
+            </div>
+
+            <div class="vector-step key-insight">
+              <strong>💡 Key Insight:</strong><br />
+              The transpose wᵀ converts our weight row vector into a column
+              vector, enabling the dot product operation that gives us the
+              scalar prediction ŷ.
+            </div>
+          </div>
         </div>
       </div>
 
@@ -397,6 +467,20 @@
         document.getElementById("finalPrice").textContent = Math.round(
           examplePrediction * 1000
         ).toLocaleString();
+
+        // Update vector explanation values
+        document.getElementById("w1").textContent = bias;
+        document.getElementById("w2").textContent = weight;
+        document.getElementById("w1t").textContent = bias;
+        document.getElementById("w2t").textContent = weight;
+        document.getElementById("w1tt").textContent = bias;
+        document.getElementById("w2tt").textContent = weight;
+        document.getElementById("w1tm").textContent = bias;
+        document.getElementById("w2tm").textContent = weight;
+        document.getElementById("w1tm2").textContent = bias;
+        document.getElementById("w2tm2").textContent = weight;
+        document.getElementById("w1tm3").textContent = bias;
+        document.getElementById("w2tm3").textContent = weight;
 
         // Generate line data
         const lineData = [];
