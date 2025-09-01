@@ -19,7 +19,7 @@
       }
 
       .container {
-        max-width: 1200px;
+        max-width: 1400px;
         margin: 0 auto;
         padding: 40px 20px;
       }
@@ -45,25 +45,24 @@
         line-height: 1.6;
       }
 
-      .concepts-grid {
+      .categories-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
         gap: 30px;
         margin-top: 40px;
       }
 
-      .concept-card {
+      .category-card {
         background: white;
         border-radius: 20px;
         padding: 30px;
         box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
         transition: all 0.3s ease;
-        cursor: pointer;
         position: relative;
         overflow: hidden;
       }
 
-      .concept-card::before {
+      .category-card::before {
         content: "";
         position: absolute;
         top: 0;
@@ -75,40 +74,96 @@
         transition: transform 0.3s ease;
       }
 
-      .concept-card:hover {
+      .category-card:hover {
         transform: translateY(-10px);
         box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
       }
 
-      .concept-card:hover::before {
+      .category-card:hover::before {
         transform: scaleX(1);
       }
 
-      .concept-icon {
-        font-size: 3em;
-        margin-bottom: 20px;
+      .category-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 25px;
+        gap: 15px;
+      }
+
+      .category-icon {
+        font-size: 2.5em;
         display: block;
       }
 
-      .concept-title {
-        font-size: 1.4em;
-        font-weight: 600;
-        margin-bottom: 15px;
+      .category-title {
+        font-size: 1.6em;
+        font-weight: 700;
         color: #333;
+        margin: 0;
       }
 
-      .concept-description {
+      .category-description {
         color: #666;
         line-height: 1.6;
-        margin-bottom: 20px;
+        margin-bottom: 25px;
+        font-size: 1em;
       }
 
-      .concept-status {
-        display: inline-block;
-        padding: 6px 12px;
-        border-radius: 20px;
+      .sub-concepts {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .sub-concept {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 16px;
+        background: #f8f9fa;
+        border-radius: 10px;
+        transition: all 0.2s ease;
+        cursor: pointer;
+        border-left: 3px solid transparent;
+      }
+
+      .sub-concept:hover {
+        background: #e9ecef;
+        border-left-color: #667eea;
+        transform: translateX(5px);
+      }
+
+      .sub-concept-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .sub-concept-icon {
+        font-size: 1.2em;
+        opacity: 0.7;
+      }
+
+      .sub-concept-info h4 {
+        font-size: 1em;
+        font-weight: 600;
+        color: #333;
+        margin: 0 0 2px 0;
+      }
+
+      .sub-concept-info p {
         font-size: 0.85em;
+        color: #666;
+        margin: 0;
+        line-height: 1.4;
+      }
+
+      .sub-concept-status {
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 0.75em;
         font-weight: 500;
+        white-space: nowrap;
       }
 
       .status-available {
@@ -142,13 +197,23 @@
           font-size: 1.1em;
         }
 
-        .concepts-grid {
+        .categories-grid {
           grid-template-columns: 1fr;
           gap: 20px;
         }
 
-        .concept-card {
+        .category-card {
           padding: 25px;
+        }
+
+        .sub-concept {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 8px;
+        }
+
+        .sub-concept-left {
+          width: 100%;
         }
       }
 
@@ -164,20 +229,20 @@
         }
       }
 
-      .concept-card {
+      .category-card {
         animation: fadeInUp 0.6s ease forwards;
       }
 
-      .concept-card:nth-child(1) {
+      .category-card:nth-child(1) {
         animation-delay: 0.1s;
       }
-      .concept-card:nth-child(2) {
+      .category-card:nth-child(2) {
         animation-delay: 0.2s;
       }
-      .concept-card:nth-child(3) {
+      .category-card:nth-child(3) {
         animation-delay: 0.3s;
       }
-      .concept-card:nth-child(4) {
+      .category-card:nth-child(4) {
         animation-delay: 0.4s;
       }
     </style>
@@ -192,75 +257,364 @@
         </p>
       </div>
 
-      <div class="concepts-grid">
-        <div
-          class="concept-card"
-          onclick="window.location.href='kernelized-regression.html'"
-        >
-          <span class="concept-icon">🏠</span>
-          <h3 class="concept-title">
-            Kernelized Regression: House Price Prediction
-          </h3>
-          <p class="concept-description">
-            Learn how kernel functions work in regression by predicting house
-            prices based on size. Interactively adjust kernel width to see how
-            it affects predictions.
+      <div class="categories-grid">
+        <!-- KNN Category -->
+        <div class="category-card">
+          <div class="category-header">
+            <span class="category-icon">🎯</span>
+            <h2 class="category-title">K-Nearest Neighbors (KNN)</h2>
+          </div>
+          <p class="category-description">
+            Learn how KNN works by finding the most similar data points. Explore
+            classification and regression with interactive examples.
           </p>
-          <span class="concept-status status-available">Available Now</span>
+          <div class="sub-concepts">
+            <div
+              class="sub-concept"
+              onclick="window.location.href='knn-classification.html'"
+            >
+              <div class="sub-concept-left">
+                <span class="sub-concept-icon">🏷️</span>
+                <div class="sub-concept-info">
+                  <h4>KNN Classification</h4>
+                  <p>Classify data points based on their nearest neighbors</p>
+                </div>
+              </div>
+              <span class="sub-concept-status status-coming-soon"
+                >Coming Soon</span
+              >
+            </div>
+            <div
+              class="sub-concept"
+              onclick="window.location.href='knn-regression.html'"
+            >
+              <div class="sub-concept-left">
+                <span class="sub-concept-icon">📈</span>
+                <div class="sub-concept-info">
+                  <h4>KNN Regression</h4>
+                  <p>
+                    Predict continuous values using nearest neighbor averaging
+                  </p>
+                </div>
+              </div>
+              <span class="sub-concept-status status-coming-soon"
+                >Coming Soon</span
+              >
+            </div>
+            <div
+              class="sub-concept"
+              onclick="window.location.href='knn-distance-metrics.html'"
+            >
+              <div class="sub-concept-left">
+                <span class="sub-concept-icon">📏</span>
+                <div class="sub-concept-info">
+                  <h4>Distance Metrics</h4>
+                  <p>
+                    Explore Euclidean, Manhattan, and other distance measures
+                  </p>
+                </div>
+              </div>
+              <span class="sub-concept-status status-coming-soon"
+                >Coming Soon</span
+              >
+            </div>
+          </div>
         </div>
 
-        <div class="concept-card">
-          <span class="concept-icon">🌳</span>
-          <h3 class="concept-title">
-            Decision Trees: Classification Visualization
-          </h3>
-          <p class="concept-description">
-            Visualize how decision trees split data and make predictions. See
-            the tree structure and understand feature importance.
+        <!-- Regression Category -->
+        <div class="category-card">
+          <div class="category-header">
+            <span class="category-icon">📊</span>
+            <h2 class="category-title">Regression</h2>
+          </div>
+          <p class="category-description">
+            Understand different regression techniques for predicting continuous
+            values. From simple linear to advanced kernelized methods.
           </p>
-          <span class="concept-status status-coming-soon">Coming Soon</span>
+          <div class="sub-concepts">
+            <div
+              class="sub-concept"
+              onclick="window.location.href='kernelized-regression.html'"
+            >
+              <div class="sub-concept-left">
+                <span class="sub-concept-icon">🏠</span>
+                <div class="sub-concept-info">
+                  <h4>Kernelized Regression</h4>
+                  <p>House price prediction using kernel functions</p>
+                </div>
+              </div>
+              <span class="sub-concept-status status-available"
+                >Available Now</span
+              >
+            </div>
+            <div
+              class="sub-concept"
+              onclick="window.location.href='linear-regression.html'"
+            >
+              <div class="sub-concept-left">
+                <span class="sub-concept-icon">📉</span>
+                <div class="sub-concept-info">
+                  <h4>Linear Regression</h4>
+                  <p>Fit a straight line through data points</p>
+                </div>
+              </div>
+              <span class="sub-concept-status status-coming-soon"
+                >Coming Soon</span
+              >
+            </div>
+            <div
+              class="sub-concept"
+              onclick="window.location.href='polynomial-regression.html'"
+            >
+              <div class="sub-concept-left">
+                <span class="sub-concept-icon">🔄</span>
+                <div class="sub-concept-info">
+                  <h4>Polynomial Regression</h4>
+                  <p>Fit curved lines using polynomial functions</p>
+                </div>
+              </div>
+              <span class="sub-concept-status status-coming-soon"
+                >Coming Soon</span
+              >
+            </div>
+          </div>
         </div>
 
-        <div class="concept-card">
-          <span class="concept-icon">🧠</span>
-          <h3 class="concept-title">Neural Networks: Interactive Training</h3>
-          <p class="concept-description">
-            Watch neural networks learn in real-time. Adjust layers, activation
-            functions, and see how weights change during training.
+        <!-- Classification Category -->
+        <div class="category-card">
+          <div class="category-header">
+            <span class="category-icon">🏷️</span>
+            <h2 class="category-title">Classification</h2>
+          </div>
+          <p class="category-description">
+            Learn how to categorize data into different classes. Explore
+            decision boundaries and classification algorithms.
           </p>
-          <span class="concept-status status-coming-soon">Coming Soon</span>
+          <div class="sub-concepts">
+            <div
+              class="sub-concept"
+              onclick="window.location.href='decision-trees.html'"
+            >
+              <div class="sub-concept-left">
+                <span class="sub-concept-icon">🌳</span>
+                <div class="sub-concept-info">
+                  <h4>Decision Trees</h4>
+                  <p>Tree-based classification with interactive splits</p>
+                </div>
+              </div>
+              <span class="sub-concept-status status-coming-soon"
+                >Coming Soon</span
+              >
+            </div>
+            <div
+              class="sub-concept"
+              onclick="window.location.href='svm-classification.html'"
+            >
+              <div class="sub-concept-left">
+                <span class="sub-concept-icon">⚔️</span>
+                <div class="sub-concept-info">
+                  <h4>Support Vector Machines</h4>
+                  <p>Find optimal decision boundaries with margins</p>
+                </div>
+              </div>
+              <span class="sub-concept-status status-coming-soon"
+                >Coming Soon</span
+              >
+            </div>
+            <div
+              class="sub-concept"
+              onclick="window.location.href='logistic-regression.html'"
+            >
+              <div class="sub-concept-left">
+                <span class="sub-concept-icon">📊</span>
+                <div class="sub-concept-info">
+                  <h4>Logistic Regression</h4>
+                  <p>Probabilistic classification with sigmoid function</p>
+                </div>
+              </div>
+              <span class="sub-concept-status status-coming-soon"
+                >Coming Soon</span
+              >
+            </div>
+          </div>
         </div>
 
-        <div class="concept-card">
-          <span class="concept-icon">🎯</span>
-          <h3 class="concept-title">K-Means Clustering: Dynamic Clustering</h3>
-          <p class="concept-description">
-            See how K-means clustering groups data points. Add points, change K,
-            and watch the clusters evolve.
+        <!-- Clustering Category -->
+        <div class="category-card">
+          <div class="category-header">
+            <span class="category-icon">🎯</span>
+            <h2 class="category-title">Clustering</h2>
+          </div>
+          <p class="category-description">
+            Discover patterns in unlabeled data by grouping similar points
+            together. Explore different clustering algorithms and their
+            behavior.
           </p>
-          <span class="concept-status status-coming-soon">Coming Soon</span>
+          <div class="sub-concepts">
+            <div
+              class="sub-concept"
+              onclick="window.location.href='kmeans-clustering.html'"
+            >
+              <div class="sub-concept-left">
+                <span class="sub-concept-icon">🎯</span>
+                <div class="sub-concept-info">
+                  <h4>K-Means Clustering</h4>
+                  <p>Group data points around centroids</p>
+                </div>
+              </div>
+              <span class="sub-concept-status status-coming-soon"
+                >Coming Soon</span
+              >
+            </div>
+            <div
+              class="sub-concept"
+              onclick="window.location.href='hierarchical-clustering.html'"
+            >
+              <div class="sub-concept-left">
+                <span class="sub-concept-icon">🌲</span>
+                <div class="sub-concept-info">
+                  <h4>Hierarchical Clustering</h4>
+                  <p>Build clusters in a tree-like structure</p>
+                </div>
+              </div>
+              <span class="sub-concept-status status-coming-soon"
+                >Coming Soon</span
+              >
+            </div>
+            <div
+              class="sub-concept"
+              onclick="window.location.href='dbscan-clustering.html'"
+            >
+              <div class="sub-concept-left">
+                <span class="sub-concept-icon">🔍</span>
+                <div class="sub-concept-info">
+                  <h4>DBSCAN</h4>
+                  <p>Density-based clustering for irregular shapes</p>
+                </div>
+              </div>
+              <span class="sub-concept-status status-coming-soon"
+                >Coming Soon</span
+              >
+            </div>
+          </div>
         </div>
 
-        <div class="concept-card">
-          <span class="concept-icon">📊</span>
-          <h3 class="concept-title">
-            Support Vector Machines: Margin Visualization
-          </h3>
-          <p class="concept-description">
-            Understand SVM margins and support vectors. See how different
-            kernels transform the data.
+        <!-- Neural Networks Category -->
+        <div class="category-card">
+          <div class="category-header">
+            <span class="category-icon">🧠</span>
+            <h2 class="category-title">Neural Networks</h2>
+          </div>
+          <p class="category-description">
+            Explore the power of artificial neural networks. Watch them learn
+            and understand how they process information.
           </p>
-          <span class="concept-status status-coming-soon">Coming Soon</span>
+          <div class="sub-concepts">
+            <div
+              class="sub-concept"
+              onclick="window.location.href='neural-network-training.html'"
+            >
+              <div class="sub-concept-left">
+                <span class="sub-concept-icon">⚡</span>
+                <div class="sub-concept-info">
+                  <h4>Interactive Training</h4>
+                  <p>Watch weights update in real-time</p>
+                </div>
+              </div>
+              <span class="sub-concept-status status-coming-soon"
+                >Coming Soon</span
+              >
+            </div>
+            <div
+              class="sub-concept"
+              onclick="window.location.href='activation-functions.html'"
+            >
+              <div class="sub-concept-left">
+                <span class="sub-concept-icon">📈</span>
+                <div class="sub-concept-info">
+                  <h4>Activation Functions</h4>
+                  <p>Explore ReLU, Sigmoid, and Tanh functions</p>
+                </div>
+              </div>
+              <span class="sub-concept-status status-coming-soon"
+                >Coming Soon</span
+              >
+            </div>
+            <div
+              class="sub-concept"
+              onclick="window.location.href='backpropagation.html'"
+            >
+              <div class="sub-concept-left">
+                <span class="sub-concept-icon">🔄</span>
+                <div class="sub-concept-info">
+                  <h4>Backpropagation</h4>
+                  <p>See how gradients flow through the network</p>
+                </div>
+              </div>
+              <span class="sub-concept-status status-coming-soon"
+                >Coming Soon</span
+              >
+            </div>
+          </div>
         </div>
 
-        <div class="concept-card">
-          <span class="concept-icon">🎲</span>
-          <h3 class="concept-title">Random Forests: Ensemble Learning</h3>
-          <p class="concept-description">
-            Explore how multiple decision trees work together. See the power of
-            ensemble methods in action.
+        <!-- Ensemble Methods Category -->
+        <div class="category-card">
+          <div class="category-header">
+            <span class="category-icon">🎲</span>
+            <h2 class="category-title">Ensemble Methods</h2>
+          </div>
+          <p class="category-description">
+            Learn how combining multiple models can improve predictions. Explore
+            voting, bagging, and boosting techniques.
           </p>
-          <span class="concept-status status-coming-soon">Coming Soon</span>
+          <div class="sub-concepts">
+            <div
+              class="sub-concept"
+              onclick="window.location.href='random-forest.html'"
+            >
+              <div class="sub-concept-left">
+                <span class="sub-concept-icon">🌲</span>
+                <div class="sub-concept-info">
+                  <h4>Random Forest</h4>
+                  <p>Multiple decision trees working together</p>
+                </div>
+              </div>
+              <span class="sub-concept-status status-coming-soon"
+                >Coming Soon</span
+              >
+            </div>
+            <div
+              class="sub-concept"
+              onclick="window.location.href='gradient-boosting.html'"
+            >
+              <div class="sub-concept-left">
+                <span class="sub-concept-icon">📈</span>
+                <div class="sub-concept-info">
+                  <h4>Gradient Boosting</h4>
+                  <p>Sequentially improve weak learners</p>
+                </div>
+              </div>
+              <span class="sub-concept-status status-coming-soon"
+                >Coming Soon</span
+              >
+            </div>
+            <div
+              class="sub-concept"
+              onclick="window.location.href='voting-classifier.html'"
+            >
+              <div class="sub-concept-left">
+                <span class="sub-concept-icon">🗳️</span>
+                <div class="sub-concept-info">
+                  <h4>Voting Classifier</h4>
+                  <p>Combine predictions from multiple models</p>
+                </div>
+              </div>
+              <span class="sub-concept-status status-coming-soon"
+                >Coming Soon</span
+              >
+            </div>
+          </div>
         </div>
       </div>
 
@@ -274,7 +628,8 @@
     <script>
       // Add some interactive effects
       document.addEventListener("DOMContentLoaded", function () {
-        const cards = document.querySelectorAll(".concept-card");
+        const cards = document.querySelectorAll(".category-card");
+        const subConcepts = document.querySelectorAll(".sub-concept");
 
         cards.forEach((card) => {
           card.addEventListener("mouseenter", function () {
@@ -283,6 +638,16 @@
 
           card.addEventListener("mouseleave", function () {
             this.style.transform = "translateY(0) scale(1)";
+          });
+        });
+
+        subConcepts.forEach((concept) => {
+          concept.addEventListener("mouseenter", function () {
+            this.style.transform = "translateX(5px) scale(1.02)";
+          });
+
+          concept.addEventListener("mouseleave", function () {
+            this.style.transform = "translateX(0) scale(1)";
           });
         });
       });
