@@ -317,10 +317,10 @@
             )}) / (2 × ${kernelWidthSquared.toFixed(0)}))<br>`;
             weightsHtml += `   Raw Weight = exp(${exponent.toFixed(
               3
-            )}) = ${weight.toFixed(3)}<br>`;
+            )}) = ${weight.toFixed(6)}<br>`;
             weightsHtml += `   Normalized Weight = ${(
               weight / totalWeight
-            ).toFixed(3)} (${percentage.toFixed(1)}%)`;
+            ).toFixed(6)} (${percentage.toFixed(1)}%)`;
             weightsHtml += `</small>`;
             weightsHtml += `</div>`;
           });
