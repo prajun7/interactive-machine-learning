@@ -652,27 +652,31 @@
         calcDiv.style.display = "block";
 
         let calcHTML = `<strong>Detailed Calculation for K=${k}:</strong><br><br>`;
-        calcHTML += `<div style="background: #f7fafc; padding: 10px; border-radius: 5px; margin: 10px 0;">`;
-        calcHTML += `<strong>Selected ${k} Nearest Neighbors (sorted by distance):</strong><br>`;
+        calcHTML += `<div style="background: #f7fafc; padding: 15px; border-radius: 5px; margin: 10px 0;">`;
+        calcHTML += `<strong>Selected ${k} Nearest Neighbors (sorted by distance):</strong><br><br>`;
 
         nearestK.forEach((point, index) => {
+          calcHTML += `<div style="margin: 5px 0; padding: 5px; background: white; border-radius: 3px;">`;
           calcHTML += `${index + 1}. Point (${point.x}, ${point.y}) → y = ${
             point.value
-          }, distance = ${point.distance.toFixed(2)}<br>`;
+          }, distance = ${point.distance.toFixed(2)}`;
+          calcHTML += `</div>`;
         });
 
         calcHTML += `</div>`;
-        calcHTML += `<div style="background: #e6fffa; padding: 10px; border-radius: 5px;">`;
-        calcHTML += `<strong>Average Calculation:</strong><br>`;
+        calcHTML += `<div style="background: #e6fffa; padding: 15px; border-radius: 5px; margin-top: 15px;">`;
+        calcHTML += `<strong>Average Calculation:</strong><br><br>`;
+        calcHTML += `<div style="font-family: monospace; line-height: 1.6;">`;
         calcHTML += `ŷ = (${nearestK
           .map((p) => p.value)
           .join(" + ")}) / ${k}<br>`;
         calcHTML += `ŷ = ${nearestK
           .reduce((sum, p) => sum + p.value, 0)
           .toFixed(1)} / ${k}<br>`;
-        calcHTML += `<span style="background: #fed7d7; padding: 5px; border-radius: 3px; font-weight: bold; font-size: 18px;">ŷ = ${avgValue.toFixed(
+        calcHTML += `<span style="background: #fed7d7; padding: 8px; border-radius: 3px; font-weight: bold; font-size: 18px; display: inline-block; margin-top: 5px;">ŷ = ${avgValue.toFixed(
           3
         )}</span>`;
+        calcHTML += `</div>`;
         calcHTML += `</div>`;
 
         calcDiv.innerHTML = calcHTML;
