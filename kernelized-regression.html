@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kernelized Regression Example</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 20px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+      }
+      .container {
+        background: white;
+        border-radius: 15px;
+        padding: 30px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      }
+      h1 {
+        color: #333;
+        text-align: center;
+        margin-bottom: 30px;
+        font-size: 2.2em;
+      }
+      .controls {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        border-left: 3px solid #667eea;
+        display: flex;
+        gap: 30px;
+        align-items: flex-start;
+      }
+      .controls h3 {
+        margin-top: 0;
+        margin-bottom: 15px;
+        font-size: 1.1em;
+      }
+      .controls-left {
+        flex: 1;
+      }
+      .prediction-side {
+        background: #e8f5e8;
+        padding: 15px;
+        border-radius: 8px;
+        border-left: 3px solid #28a745;
+        min-width: 200px;
+      }
+      .prediction-side h4 {
+        margin: 0 0 10px 0;
+        color: #333;
+        font-size: 1em;
+      }
+      .prediction-side .price {
+        font-size: 1.4em;
+        font-weight: bold;
+        color: #28a745;
+        margin: 0 0 5px 0;
+      }
+      .prediction-side .size {
+        color: #666;
+        font-size: 0.9em;
+        margin: 0;
+      }
+      .slider-container {
+        margin: 10px 0;
+      }
+      label {
+        font-weight: 600;
+        color: #333;
+        display: block;
+        margin-bottom: 5px;
+        font-size: 0.9em;
+      }
+      input[type="range"] {
+        width: 100%;
+        height: 5px;
+        border-radius: 3px;
+        background: #ddd;
+        outline: none;
+        -webkit-appearance: none;
+      }
+      input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: #667eea;
+        cursor: pointer;
+      }
+      .prediction-box {
+        background: #e8f5e8;
+        padding: 12px;
+        border-radius: 6px;
+        margin: 15px 0;
+        border-left: 3px solid #28a745;
+        display: none;
+      }
+      .weights-display {
+        background: #fff3cd;
+        padding: 15px;
+        border-radius: 8px;
+        margin: 20px 0;
+        border-left: 4px solid #ffc107;
+      }
+      .chart-container {
+        position: relative;
+        height: 400px;
+        margin: 20px 0;
+      }
+      .explanation {
+        background: #f0f8ff;
+        padding: 20px;
+        border-radius: 10px;
+        margin-top: 20px;
+        border-left: 4px solid #007bff;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div style="margin-bottom: 20px">
+        <a
+          href="index.html"
+          style="
+            text-decoration: none;
+            color: #667eea;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+          "
+        >
+          ← Back to Interactive ML
+        </a>
+      </div>
+      <h1>🏠 Kernelized Regression: House Price Prediction</h1>
+
+      <div class="chart-container">
+        <canvas id="regressionChart"></canvas>
+      </div>
+
+      <div class="controls">
+        <div class="controls-left">
+          <h3>Interactive Controls</h3>
+          <div class="slider-container">
+            <label for="newHouseSize"
+              >New House Size to Predict: <span id="sizeValue">1100</span> sq
+              ft</label
+            >
+            <input
+              type="range"
+              id="newHouseSize"
+              min="800"
+              max="2500"
+              value="1100"
+              step="50"
+            />
+          </div>
+          <div class="slider-container">
+            <label for="kernelWidth"
+              >Kernel Width (how strict similarity is):
+              <span id="widthValue">300</span></label
+            >
+            <input
+              type="range"
+              id="kernelWidth"
+              min="100"
+              max="800"
+              value="300"
+              step="50"
+            />
+          </div>
+        </div>
+        <div class="prediction-side">
+          <h4>📊 Current Prediction</h4>
+          <p class="price" id="sidePrediction">$225,000</p>
+          <p class="size" id="sideSize">for 1100 sq ft</p>
+        </div>
+      </div>
+
+      <div class="prediction-box">
+        <h3>📊 Prediction Result</h3>
+        <p id="predictionText">
+          Predicted price for 1100 sq ft house: <strong>$225,000</strong>
+        </p>
+      </div>
+
+      <div class="weights-display">
+        <h3>⚖️ How Each Training House Contributes</h3>
+        <div id="weightsText"></div>
+      </div>
+
+      <div class="explanation">
+        <h3>📖 How It Works</h3>
+        <p>
+          <strong>Kernel Function:</strong> Measures similarity using a Gaussian
+          (bell curve). Houses closer in size get higher weights.
+        </p>
+        <p>
+          <strong>Prediction:</strong> Weighted average of all training house
+          prices, where weights come from the kernel function.
+        </p>
+        <p>
+          <strong>Try this:</strong> Move the sliders to see how predictions
+          change!
+        </p>
+        <ul>
+          <li>
+            <strong>Smaller kernel width:</strong> Only very similar houses
+            matter (more local)
+          </li>
+          <li>
+            <strong>Larger kernel width:</strong> All houses contribute more
+            equally (more global)
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <script>
+      // Training data: [size, price] - matches our calculation example
+      const trainingData = [
+        [1000, 200],
+        [1200, 250],
+        [1500, 320],
+        [2000, 400],
+        [2200, 450],
+      ];
+
+      let chart;
+
+      // Gaussian kernel function
+      function gaussianKernel(x1, x2, width) {
+        const diff = x1 - x2;
+        return Math.exp(-(diff * diff) / (2 * width * width));
+      }
+
+      function updatePrediction() {
+        const newSize = parseInt(document.getElementById("newHouseSize").value);
+        const kernelWidth = parseInt(
+          document.getElementById("kernelWidth").value
+        );
+
+        // Update displayed values
+        const sizeValueEl = document.getElementById("sizeValue");
+        const widthValueEl = document.getElementById("widthValue");
+
+        if (sizeValueEl) sizeValueEl.textContent = newSize;
+        if (widthValueEl) widthValueEl.textContent = kernelWidth;
+
+        // Calculate weights and prediction
+        let weights = [];
+        let weightedSum = 0;
+        let totalWeight = 0;
+
+        trainingData.forEach(([size, price], i) => {
+          const weight = gaussianKernel(newSize, size, kernelWidth);
+          weights.push(weight);
+          weightedSum += weight * price;
+          totalWeight += weight;
+        });
+
+        const prediction = weightedSum / totalWeight;
+
+        // Update side prediction
+        const sidePredictionEl = document.getElementById("sidePrediction");
+        const sideSizeEl = document.getElementById("sideSize");
+
+        if (sidePredictionEl) {
+          sidePredictionEl.textContent = `$${Math.round(
+            prediction * 1000
+          ).toLocaleString()}`;
+        }
+        if (sideSizeEl) {
+          sideSizeEl.textContent = `for ${newSize} sq ft`;
+        }
+
+        // Update main prediction display (hidden but still functional)
+        const predictionTextEl = document.getElementById("predictionText");
+        if (predictionTextEl) {
+          predictionTextEl.innerHTML = `Predicted price for ${newSize} sq ft house: <strong>$${Math.round(
+            prediction * 1000
+          ).toLocaleString()}</strong>`;
+        }
+
+        // Update weights display
+        const weightsTextEl = document.getElementById("weightsText");
+        if (weightsTextEl) {
+          let weightsHtml = "";
+          trainingData.forEach(([size, price], i) => {
+            const weight = weights[i];
+            const percentage = (weight / totalWeight) * 100;
+            weightsHtml += `<p>🏠 ${size} sq ft ($${price}k): Weight = ${weight.toFixed(
+              3
+            )} (${percentage.toFixed(1)}% influence)</p>`;
+          });
+          weightsTextEl.innerHTML = weightsHtml;
+        }
+
+        // Update chart
+        if (chart) {
+          updateChart(newSize, kernelWidth, weights, prediction);
+        }
+      }
+
+      function updateChart(newSize, kernelWidth, weights, prediction) {
+        // Generate smooth curve data
+        const curveData = [];
+        for (let x = 800; x <= 2500; x += 20) {
+          let weightedSum = 0;
+          let totalWeight = 0;
+
+          trainingData.forEach(([size, price]) => {
+            const weight = gaussianKernel(x, size, kernelWidth);
+            weightedSum += weight * price;
+            totalWeight += weight;
+          });
+
+          curveData.push({ x: x, y: weightedSum / totalWeight });
+        }
+
+        // Training points with size-based styling
+        const trainingPoints = trainingData.map(([size, price], i) => ({
+          x: size,
+          y: price,
+          weight: weights[i],
+        }));
+
+        const maxWeight = Math.max(...weights);
+
+        chart.data = {
+          datasets: [
+            {
+              label: "Kernelized Regression Curve",
+              data: curveData,
+              type: "line",
+              borderColor: "rgb(102, 126, 234)",
+              backgroundColor: "rgba(102, 126, 234, 0.1)",
+              borderWidth: 3,
+              fill: true,
+              tension: 0.4,
+              pointRadius: 0,
+            },
+            {
+              label: "Training Houses",
+              data: trainingPoints,
+              type: "scatter",
+              backgroundColor: trainingPoints.map(
+                (point) =>
+                  `rgba(40, 167, 69, ${0.3 + 0.7 * (point.weight / maxWeight)})`
+              ),
+              borderColor: trainingPoints.map(
+                (point) =>
+                  `rgba(40, 167, 69, ${0.5 + 0.5 * (point.weight / maxWeight)})`
+              ),
+              borderWidth: trainingPoints.map(
+                (point) => 2 + 3 * (point.weight / maxWeight)
+              ),
+              pointRadius: trainingPoints.map(
+                (point) => 8 + 8 * (point.weight / maxWeight)
+              ),
+            },
+            {
+              label: "New House Prediction",
+              data: [{ x: newSize, y: prediction }],
+              type: "scatter",
+              backgroundColor: "rgba(220, 53, 69, 0.8)",
+              borderColor: "rgb(220, 53, 69)",
+              borderWidth: 3,
+              pointRadius: 12,
+              pointStyle: "triangle",
+            },
+          ],
+        };
+
+        chart.update("none");
+      }
+
+      // Initialize everything when DOM is loaded
+      document.addEventListener("DOMContentLoaded", function () {
+        const ctx = document.getElementById("regressionChart").getContext("2d");
+
+        // Initialize chart
+        chart = new Chart(ctx, {
+          type: "scatter",
+          data: {},
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: true,
+                position: "top",
+              },
+              title: {
+                display: true,
+                text: "House Size vs Price with Kernelized Regression",
+              },
+            },
+            scales: {
+              x: {
+                title: {
+                  display: true,
+                  text: "House Size (sq ft)",
+                },
+                min: 800,
+                max: 2500,
+              },
+              y: {
+                title: {
+                  display: true,
+                  text: "Price ($1000s)",
+                },
+                min: 150,
+                max: 500,
+              },
+            },
+            elements: {
+              point: {
+                hoverRadius: 8,
+              },
+            },
+          },
+        });
+
+        // Event listeners
+        const newHouseSizeEl = document.getElementById("newHouseSize");
+        const kernelWidthEl = document.getElementById("kernelWidth");
+
+        if (newHouseSizeEl) {
+          newHouseSizeEl.addEventListener("input", updatePrediction);
+        }
+        if (kernelWidthEl) {
+          kernelWidthEl.addEventListener("input", updatePrediction);
+        }
+
+        // Initial update
+        updatePrediction();
+      });
+    </script>
+  </body>
+</html>
