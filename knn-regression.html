@@ -660,12 +660,29 @@
           calcHTML += `${index + 1}. Point (${point.x}, ${point.y}) → y = ${
             point.value
           }, distance = ${point.distance.toFixed(2)}`;
+
+          // Add distance calculation for all points
+          const dx = queryPoint.x - point.x;
+          const dy = queryPoint.y - point.y;
+          calcHTML += `<br><small style="color: #666; font-family: monospace;">`;
+          calcHTML += `   Distance = √[(${queryPoint.x} - ${point.x})² + (${queryPoint.y} - ${point.y})²]`;
+          calcHTML += `<br>   Distance = √[(${dx})² + (${dy})²] = √[${(
+            dx * dx
+          ).toFixed(0)} + ${(dy * dy).toFixed(0)}] = √${(
+            dx * dx +
+            dy * dy
+          ).toFixed(0)} = ${point.distance.toFixed(2)}`;
+          calcHTML += `</small>`;
+
           calcHTML += `</div>`;
         });
 
         calcHTML += `</div>`;
         calcHTML += `<div style="background: #e6fffa; padding: 15px; border-radius: 5px; margin-top: 15px;">`;
-        calcHTML += `<strong>Average Calculation:</strong><br><br>`;
+        calcHTML += `<strong>Average Calculation:</strong><br>`;
+        calcHTML += `<div style="background: #fff3cd; padding: 10px; border-radius: 5px; margin: 10px 0; border-left: 4px solid #ffc107;">`;
+        calcHTML += `<strong>💡 Key Insight:</strong> Distances are only used to find the closest neighbors. Once we have the K nearest neighbors, we <strong>ignore the distances</strong> and only use their <strong>y-values</strong> for the prediction!`;
+        calcHTML += `</div>`;
         calcHTML += `<div style="font-family: monospace; line-height: 1.6;">`;
         calcHTML += `ŷ = (${nearestK
           .map((p) => p.value)
