@@ -247,6 +247,15 @@
         opacity: 0.7;
       }
 
+      .plot-area-3d {
+        transition: all 0.3s ease;
+      }
+
+      .plot-area-3d.transforming {
+        background: linear-gradient(135deg, #f0f8ff 0%, #e6f3ff 100%);
+        border-color: #4299e1;
+      }
+
       .axis-label {
         font-size: 14px;
         font-weight: bold;
@@ -422,7 +431,7 @@
 
         <div class="plot-section">
           <h3 class="plot-title">🚀 Transformed 3D Space</h3>
-          <div class="plot-area">
+          <div class="plot-area plot-area-3d" id="plot-area-3d">
             <svg id="plot3d" width="400" height="400">
               <!-- Grid -->
               <defs>
@@ -632,12 +641,14 @@
 
       // Transform point to 3D
       function transformTo3D(point, sigma, strength) {
-        const distanceFromOrigin = Math.sqrt(point.x ** 2 + point.y ** 2);
+        const distanceFromOrigin = Math.sqrt(
+          (point.x - 200) ** 2 + (point.y - 200) ** 2
+        );
         const z = Math.exp(-(distanceFromOrigin ** 2) / (2 * sigma ** 2));
 
         // Interpolate between original and transformed position
         const originalZ = 0;
-        const transformedZ = z * 200; // Scale for visualization
+        const transformedZ = z * 150; // Scale for visualization
 
         const finalZ = originalZ + (transformedZ - originalZ) * strength;
 
@@ -663,7 +674,7 @@
             "circle"
           );
           circle.setAttribute("cx", point.x);
-          circle.setAttribute("cy", is3D ? point.y - point.z * 0.3 : point.y); // Adjust Y for 3D effect
+          circle.setAttribute("cy", is3D ? point.y - point.z * 0.4 : point.y); // Adjust Y for 3D effect
           circle.setAttribute("r", 6);
           circle.setAttribute("class", `data-point ${point.label}-point`);
 
@@ -700,22 +711,28 @@
         circle.setAttribute("fill", "none");
         boundary2d.appendChild(circle);
 
-        // 3D decision boundary (plane)
+        // 3D decision boundary (plane) - only show when transformation is active
         const svg3d = document.getElementById("plot3d");
         const boundary3d = svg3d.querySelector("#decision-boundary-3d");
         boundary3d.innerHTML = "";
 
-        // Draw a horizontal line representing the separating plane
-        const line = document.createElementNS(
-          "http://www.w3.org/2000/svg",
-          "line"
+        const transformStrength = parseFloat(
+          document.getElementById("transformStrength").value
         );
-        line.setAttribute("x1", 40);
-        line.setAttribute("y1", 280);
-        line.setAttribute("x2", 360);
-        line.setAttribute("y2", 280);
-        line.setAttribute("class", "decision-boundary");
-        boundary3d.appendChild(line);
+
+        if (transformStrength > 0.5) {
+          // Draw a horizontal line representing the separating plane
+          const line = document.createElementNS(
+            "http://www.w3.org/2000/svg",
+            "line"
+          );
+          line.setAttribute("x1", 40);
+          line.setAttribute("y1", 240);
+          line.setAttribute("x2", 360);
+          line.setAttribute("y2", 240);
+          line.setAttribute("class", "decision-boundary");
+          boundary3d.appendChild(line);
+        }
       }
 
       // Draw transformation lines
@@ -732,7 +749,7 @@
               parseFloat(document.getElementById("kernelWidth").value),
               strength
             );
-            const finalY = transformedPoint.y - transformedPoint.z * 0.3;
+            const finalY = transformedPoint.y - transformedPoint.z * 0.4;
 
             const line = document.createElementNS(
               "http://www.w3.org/2000/svg",
@@ -771,6 +788,14 @@
 
         // Update transformation lines
         drawTransformationLines(transformStrength);
+
+        // Update visual feedback
+        const plotArea3d = document.getElementById("plot-area-3d");
+        if (transformStrength > 0) {
+          plotArea3d.classList.add("transforming");
+        } else {
+          plotArea3d.classList.remove("transforming");
+        }
       }
 
       // Animation
