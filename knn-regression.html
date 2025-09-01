@@ -6,8 +6,10 @@
     <title>Interactive KNN Regression Visualization</title>
     <style>
       body {
-        font-family: Arial, sans-serif;
-        margin: 20px;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 20px;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         min-height: 100vh;
       }
@@ -15,32 +17,81 @@
         background: white;
         border-radius: 15px;
         padding: 30px;
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-        max-width: 1200px;
-        margin: 0 auto;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
       }
-      .title {
-        text-align: center;
+      h1 {
         color: #333;
-        margin-bottom: 20px;
-        font-size: 28px;
-        font-weight: bold;
-      }
-      .input-section {
-        background: #f0f8ff;
-        padding: 20px;
-        border-radius: 10px;
-        border: 2px solid #4299e1;
-        margin-bottom: 20px;
         text-align: center;
+        margin-bottom: 30px;
+        font-size: 2.2em;
       }
-      .k-selector {
-        margin: 15px;
-        font-size: 18px;
+      .controls {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        border-left: 3px solid #667eea;
+        display: flex;
+        gap: 30px;
+        align-items: flex-start;
       }
-      .k-selector input[type="range"] {
-        width: 200px;
-        margin: 0 10px;
+      .controls h3 {
+        margin-top: 0;
+        margin-bottom: 15px;
+        font-size: 1.1em;
+      }
+      .controls-left {
+        flex: 1;
+      }
+      .prediction-side {
+        background: #e8f5e8;
+        padding: 15px;
+        border-radius: 8px;
+        border-left: 3px solid #28a745;
+        min-width: 200px;
+      }
+      .prediction-side h4 {
+        margin: 0 0 10px 0;
+        color: #333;
+        font-size: 1em;
+      }
+      .prediction-side .prediction {
+        font-size: 1.4em;
+        font-weight: bold;
+        color: #28a745;
+        margin: 0 0 5px 0;
+      }
+      .prediction-side .details {
+        color: #666;
+        font-size: 0.9em;
+        margin: 0;
+      }
+      .slider-container {
+        margin: 10px 0;
+      }
+      label {
+        font-weight: 600;
+        color: #333;
+        display: block;
+        margin-bottom: 5px;
+        font-size: 0.9em;
+      }
+      input[type="range"] {
+        width: 100%;
+        height: 5px;
+        border-radius: 3px;
+        background: #ddd;
+        outline: none;
+        -webkit-appearance: none;
+      }
+      input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: #667eea;
+        cursor: pointer;
       }
       .k-value {
         background: #4299e1;
@@ -49,13 +100,21 @@
         border-radius: 20px;
         font-weight: bold;
         font-size: 20px;
+        display: inline-block;
+        margin-left: 10px;
       }
       .plot-area {
         background: #f8f9fa;
         border: 2px solid #ddd;
         border-radius: 10px;
         padding: 20px;
+        margin: 20px 0;
+        text-align: center;
+      }
+      .plot-area h3 {
         margin-bottom: 20px;
+        color: #333;
+        font-size: 1.3em;
       }
       .steps-container {
         display: flex;
@@ -64,6 +123,7 @@
         padding: 20px;
         border-radius: 10px;
         border-top: 5px solid #4299e1;
+        margin-top: 20px;
       }
       .step {
         flex: 1;
@@ -96,6 +156,9 @@
       svg {
         width: 100%;
         height: 500px;
+        max-width: 800px;
+        margin: 0 auto;
+        display: block;
       }
       .data-point {
         cursor: pointer;
@@ -168,10 +231,10 @@
         </a>
       </div>
 
-      <h1 class="title">Interactive K-Nearest Neighbors (KNN) Regression</h1>
+      <h1>📈 Interactive K-Nearest Neighbors (KNN) Regression</h1>
 
       <div class="plot-area">
-        <h3 style="text-align: center">2D Feature Space Visualization</h3>
+        <h3>2D Feature Space Visualization</h3>
         <svg id="plot">
           <!-- Grid lines -->
           <defs>
@@ -389,16 +452,6 @@
             stroke-width="3"
             class="query-point"
           />
-          <text
-            x="290"
-            y="310"
-            text-anchor="middle"
-            font-size="14"
-            fill="#c53030"
-            font-weight="bold"
-          >
-            Query: y=?
-          </text>
 
           <!-- Distance lines and neighbors (dynamically added) -->
           <g id="distance-lines"></g>
@@ -458,59 +511,35 @@
         </svg>
       </div>
 
-      <div style="display: flex; gap: 20px; margin-bottom: 20px">
-        <div class="input-section" style="flex: 1; margin-bottom: 0">
-          <h3>📥 Input Configuration</h3>
-          <div style="text-align: left">
-            <div style="margin: 15px 0">
-              <strong>🎯 Query Point:</strong> (290, 290) →
-              <span style="color: #e53e3e; font-weight: bold">y = ?</span>
-            </div>
-            <div style="margin: 15px 0">
-              <strong>📊 Training Data:</strong> 12 points with known y-values
-            </div>
-            <div class="k-selector" style="margin: 15px 0; text-align: center">
-              <label for="kValue"
-                ><strong>⚙️ Select K (Number of Neighbors):</strong></label
-              ><br />
-              <input
-                type="range"
-                id="kValue"
-                min="1"
-                max="12"
-                value="5"
-                oninput="updateKNN()"
-              />
+      <div class="controls">
+        <div class="controls-left">
+          <h3>Interactive Controls</h3>
+          <div class="slider-container">
+            <label for="kValue">
+              Select K (Number of Neighbors):
               <span class="k-value" id="kValueDisplay">5</span>
-            </div>
+            </label>
+            <input
+              type="range"
+              id="kValue"
+              min="1"
+              max="12"
+              value="5"
+              oninput="updateKNN()"
+            />
+          </div>
+          <div style="margin-top: 15px; font-size: 0.9em; color: #666">
+            <strong>Query Point:</strong> (290, 290) →
+            <span style="color: #e53e3e; font-weight: bold">y = ?</span><br />
+            <strong>Training Data:</strong> 12 points with known y-values
           </div>
         </div>
-
-        <div
-          style="
-            flex: 1;
-            background: #f0f8ff;
-            padding: 20px;
-            border-radius: 10px;
-            border: 2px solid #28a745;
-          "
-        >
-          <h3>📤 Output Results</h3>
-          <div
-            id="prediction-result-inline"
-            class="prediction-result"
-            style="margin: 0; background: #d4edda"
-          >
-            Prediction will appear here...
-          </div>
+        <div class="prediction-side">
+          <h4>📊 Current Prediction</h4>
+          <p class="prediction" id="sidePrediction">ŷ = 4.800</p>
+          <p class="details" id="sideDetails">Average of 5 nearest neighbors</p>
         </div>
       </div>
-
-      <div
-        id="prediction-result"
-        class="prediction-result"
-        style="display: none"
-      ></div>
 
       <div
         class="calculation-box"
@@ -607,17 +636,16 @@
         const avgValue =
           nearestK.reduce((sum, p) => sum + p.value, 0) / nearestK.length;
 
-        // Show prediction result in the inline section
-        const resultInlineDiv = document.getElementById(
-          "prediction-result-inline"
-        );
-        resultInlineDiv.innerHTML = `
-                <strong>🎯 KNN Prediction (K=${k}):</strong><br>
-                <span style="font-size: 24px; color: #28a745;">ŷ = ${avgValue.toFixed(
-                  3
-                )}</span><br>
-                <small style="color: #666;">Average of ${k} nearest neighbors</small>
-            `;
+        // Update side prediction
+        const sidePredictionEl = document.getElementById("sidePrediction");
+        const sideDetailsEl = document.getElementById("sideDetails");
+
+        if (sidePredictionEl) {
+          sidePredictionEl.textContent = `ŷ = ${avgValue.toFixed(3)}`;
+        }
+        if (sideDetailsEl) {
+          sideDetailsEl.textContent = `Average of ${k} nearest neighbors`;
+        }
 
         // Show calculation details
         const calcDiv = document.getElementById("calculation-details");
@@ -711,8 +739,6 @@
           distanceLabel.textContent = `d=${point.distance.toFixed(1)}`;
           labelsGroup.appendChild(distanceLabel);
         });
-
-        // Remove the prediction text from the graph - no longer needed
       }
 
       // Initialize with k=5
