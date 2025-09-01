@@ -1,384 +1,719 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kernelized Regression Example</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Interactive Machine Learning</title>
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        color: #333;
+      }
+
+      .container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 40px 20px;
+      }
+
+      .header {
+        text-align: center;
+        margin-bottom: 60px;
+        color: white;
+      }
+
+      .header h1 {
+        font-size: 3.5em;
+        font-weight: 700;
+        margin-bottom: 20px;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+      }
+
+      .header p {
+        font-size: 1.3em;
+        opacity: 0.9;
+        max-width: 600px;
+        margin: 0 auto;
+        line-height: 1.6;
+      }
+
+      .categories-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        gap: 30px;
+        margin-top: 40px;
+      }
+
+      .category-card {
+        background: white;
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .category-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #667eea, #764ba2);
+        transform: scaleX(0);
+        transition: transform 0.3s ease;
+      }
+
+      .category-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+      }
+
+      .category-card:hover::before {
+        transform: scaleX(1);
+      }
+
+      .category-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 25px;
+        gap: 15px;
+      }
+
+      .category-icon {
+        font-size: 2.5em;
+        display: block;
+      }
+
+      .category-title {
+        font-size: 1.6em;
+        font-weight: 700;
+        color: #333;
+        margin: 0;
+      }
+
+      .category-description {
+        color: #666;
+        line-height: 1.6;
+        margin-bottom: 25px;
+        font-size: 1em;
+      }
+
+      .sub-concepts {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .sub-concept {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 16px;
+        background: #f8f9fa;
+        border-radius: 10px;
+        transition: all 0.2s ease;
+        cursor: pointer;
+        border-left: 3px solid transparent;
+      }
+
+      .sub-concept:hover {
+        background: #e9ecef;
+        border-left-color: #667eea;
+        transform: translateX(5px);
+      }
+
+      .sub-concept-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .sub-concept-icon {
+        font-size: 1.2em;
+        opacity: 0.7;
+      }
+
+      .sub-concept-info h4 {
+        font-size: 1em;
+        font-weight: 600;
+        color: #333;
+        margin: 0 0 2px 0;
+      }
+
+      .sub-concept-info p {
+        font-size: 0.85em;
+        color: #666;
+        margin: 0;
+        line-height: 1.4;
+      }
+
+      .sub-concept-status {
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 0.75em;
+        font-weight: 500;
+        white-space: nowrap;
+      }
+
+      .status-available {
+        background: #d4edda;
+        color: #155724;
+      }
+
+      .status-coming-soon {
+        background: #fff3cd;
+        color: #856404;
+      }
+
+      .footer {
+        text-align: center;
+        margin-top: 60px;
+        color: white;
+        opacity: 0.8;
+      }
+
+      .footer p {
+        font-size: 0.9em;
+      }
+
+      /* Responsive design */
+      @media (max-width: 768px) {
+        .header h1 {
+          font-size: 2.5em;
         }
-        .container {
-            background: white;
-            border-radius: 15px;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+
+        .header p {
+          font-size: 1.1em;
         }
-        h1 {
-            color: #333;
-            text-align: center;
-            margin-bottom: 30px;
-            font-size: 2.2em;
+
+        .categories-grid {
+          grid-template-columns: 1fr;
+          gap: 20px;
         }
-        .controls {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            border-left: 3px solid #667eea;
-            display: flex;
-            gap: 30px;
-            align-items: flex-start;
+
+        .category-card {
+          padding: 25px;
         }
-        .controls h3 {
-            margin-top: 0;
-            margin-bottom: 15px;
-            font-size: 1.1em;
+
+        .sub-concept {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 8px;
         }
-        .controls-left {
-            flex: 1;
+
+        .sub-concept-left {
+          width: 100%;
         }
-        .prediction-side {
-            background: #e8f5e8;
-            padding: 15px;
-            border-radius: 8px;
-            border-left: 3px solid #28a745;
-            min-width: 200px;
+      }
+
+      /* Animation for cards */
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(30px);
         }
-        .prediction-side h4 {
-            margin: 0 0 10px 0;
-            color: #333;
-            font-size: 1em;
+        to {
+          opacity: 1;
+          transform: translateY(0);
         }
-        .prediction-side .price {
-            font-size: 1.4em;
-            font-weight: bold;
-            color: #28a745;
-            margin: 0 0 5px 0;
-        }
-        .prediction-side .size {
-            color: #666;
-            font-size: 0.9em;
-            margin: 0;
-        }
-        .slider-container {
-            margin: 10px 0;
-        }
-        label {
-            font-weight: 600;
-            color: #333;
-            display: block;
-            margin-bottom: 5px;
-            font-size: 0.9em;
-        }
-        input[type="range"] {
-            width: 100%;
-            height: 5px;
-            border-radius: 3px;
-            background: #ddd;
-            outline: none;
-            -webkit-appearance: none;
-        }
-        input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            background: #667eea;
-            cursor: pointer;
-        }
-        .prediction-box {
-            background: #e8f5e8;
-            padding: 12px;
-            border-radius: 6px;
-            margin: 15px 0;
-            border-left: 3px solid #28a745;
-            display: none;
-        }
-        .weights-display {
-            background: #fff3cd;
-            padding: 15px;
-            border-radius: 8px;
-            margin: 20px 0;
-            border-left: 4px solid #ffc107;
-        }
-        .chart-container {
-            position: relative;
-            height: 400px;
-            margin: 20px 0;
-        }
-        .explanation {
-            background: #f0f8ff;
-            padding: 20px;
-            border-radius: 10px;
-            margin-top: 20px;
-            border-left: 4px solid #007bff;
-        }
+      }
+
+      .category-card {
+        animation: fadeInUp 0.6s ease forwards;
+      }
+
+      .category-card:nth-child(1) {
+        animation-delay: 0.1s;
+      }
+      .category-card:nth-child(2) {
+        animation-delay: 0.2s;
+      }
+      .category-card:nth-child(3) {
+        animation-delay: 0.3s;
+      }
+      .category-card:nth-child(4) {
+        animation-delay: 0.4s;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="container">
-        <h1>🏠 Kernelized Regression: House Price Prediction</h1>
-        
-        <div class="chart-container">
-            <canvas id="regressionChart"></canvas>
-        </div>
+      <div class="header">
+        <h1>🤖 Interactive Machine Learning</h1>
+        <p>
+          Explore machine learning concepts through interactive visualizations
+          and hands-on examples. Learn by doing!
+        </p>
+      </div>
 
-        <div class="controls">
-            <div class="controls-left">
-                <h3>Interactive Controls</h3>
-                <div class="slider-container">
-                    <label for="newHouseSize">New House Size to Predict: <span id="sizeValue">1100</span> sq ft</label>
-                    <input type="range" id="newHouseSize" min="800" max="2500" value="1100" step="50">
+      <div class="categories-grid">
+        <!-- Kernel Methods Category -->
+        <div class="category-card">
+          <div class="category-header">
+            <span class="category-icon">🚀</span>
+            <h2 class="category-title">Kernel Methods</h2>
+          </div>
+          <p class="category-description">
+            Explore powerful techniques that transform data into
+            higher-dimensional spaces to make complex problems linear and
+            solvable.
+          </p>
+          <div class="sub-concepts">
+            <div
+              class="sub-concept"
+              onclick="window.location.href='kernel-method.html'"
+            >
+              <div class="sub-concept-left">
+                <span class="sub-concept-icon">🔮</span>
+                <div class="sub-concept-info">
+                  <h4>The Kernel Trick</h4>
+                  <p>
+                    Transform data to higher dimensions for linear separation
+                  </p>
                 </div>
-                <div class="slider-container">
-                    <label for="kernelWidth">Kernel Width (how strict similarity is): <span id="widthValue">300</span></label>
-                    <input type="range" id="kernelWidth" min="100" max="800" value="300" step="50">
+              </div>
+              <span class="sub-concept-status status-available"
+                >Available Now</span
+              >
+            </div>
+            <div
+              class="sub-concept"
+              onclick="window.location.href='svm-kernel.html'"
+            >
+              <div class="sub-concept-left">
+                <span class="sub-concept-icon">⚔️</span>
+                <div class="sub-concept-info">
+                  <h4>Kernel SVM</h4>
+                  <p>Support Vector Machines with kernel functions</p>
                 </div>
+              </div>
+              <span class="sub-concept-status status-coming-soon"
+                >Coming Soon</span
+              >
             </div>
-            <div class="prediction-side">
-                <h4>📊 Current Prediction</h4>
-                <p class="price" id="sidePrediction">$225,000</p>
-                <p class="size" id="sideSize">for 1100 sq ft</p>
+            <div
+              class="sub-concept"
+              onclick="window.location.href='kernel-types.html'"
+            >
+              <div class="sub-concept-left">
+                <span class="sub-concept-icon">🎯</span>
+                <div class="sub-concept-info">
+                  <h4>Kernel Types</h4>
+                  <p>RBF, Polynomial, Linear, and other kernel functions</p>
+                </div>
+              </div>
+              <span class="sub-concept-status status-coming-soon"
+                >Coming Soon</span
+              >
             </div>
+          </div>
         </div>
 
-        <div class="prediction-box">
-            <h3>📊 Prediction Result</h3>
-            <p id="predictionText">Predicted price for 1100 sq ft house: <strong>$225,000</strong></p>
+        <!-- KNN Category -->
+        <div class="category-card">
+          <div class="category-header">
+            <span class="category-icon">🎯</span>
+            <h2 class="category-title">K-Nearest Neighbors (KNN)</h2>
+          </div>
+          <p class="category-description">
+            Learn how KNN works by finding the most similar data points. Explore
+            classification and regression with interactive examples.
+          </p>
+          <div class="sub-concepts">
+            <div
+              class="sub-concept"
+              onclick="window.location.href='knn-classification.html'"
+            >
+              <div class="sub-concept-left">
+                <span class="sub-concept-icon">🏷️</span>
+                <div class="sub-concept-info">
+                  <h4>KNN Classification</h4>
+                  <p>Classify data points based on their nearest neighbors</p>
+                </div>
+              </div>
+              <span class="sub-concept-status status-coming-soon"
+                >Coming Soon</span
+              >
+            </div>
+            <div
+              class="sub-concept"
+              onclick="window.location.href='knn-regression.html'"
+            >
+              <div class="sub-concept-left">
+                <span class="sub-concept-icon">📈</span>
+                <div class="sub-concept-info">
+                  <h4>KNN Regression</h4>
+                  <p>
+                    Predict continuous values using nearest neighbor averaging
+                  </p>
+                </div>
+              </div>
+              <span class="sub-concept-status status-available"
+                >Available Now</span
+              >
+            </div>
+
+            <div
+              class="sub-concept"
+              onclick="window.location.href='knn-distance-metrics.html'"
+            >
+              <div class="sub-concept-left">
+                <span class="sub-concept-icon">📏</span>
+                <div class="sub-concept-info">
+                  <h4>Distance Metrics</h4>
+                  <p>
+                    Explore Euclidean, Manhattan, and other distance measures
+                  </p>
+                </div>
+              </div>
+              <span class="sub-concept-status status-coming-soon"
+                >Coming Soon</span
+              >
+            </div>
+          </div>
         </div>
 
-        <div class="weights-display">
-            <h3>⚖️ How Each Training House Contributes</h3>
-            <div id="weightsText"></div>
+        <!-- Regression Category -->
+        <div class="category-card">
+          <div class="category-header">
+            <span class="category-icon">📊</span>
+            <h2 class="category-title">Regression</h2>
+          </div>
+          <p class="category-description">
+            Understand different regression techniques for predicting continuous
+            values. From simple linear to advanced kernelized methods.
+          </p>
+          <div class="sub-concepts">
+            <div
+              class="sub-concept"
+              onclick="window.location.href='kernelized-regression.html'"
+            >
+              <div class="sub-concept-left">
+                <span class="sub-concept-icon">🏠</span>
+                <div class="sub-concept-info">
+                  <h4>Kernelized Regression</h4>
+                  <p>House price prediction using kernel functions</p>
+                </div>
+              </div>
+              <span class="sub-concept-status status-available"
+                >Available Now</span
+              >
+            </div>
+            <div
+              class="sub-concept"
+              onclick="window.location.href='linear-regression.html'"
+            >
+              <div class="sub-concept-left">
+                <span class="sub-concept-icon">📉</span>
+                <div class="sub-concept-info">
+                  <h4>Linear Regression</h4>
+                  <p>Fit a straight line through data points</p>
+                </div>
+              </div>
+              <span class="sub-concept-status status-coming-soon"
+                >Coming Soon</span
+              >
+            </div>
+            <div
+              class="sub-concept"
+              onclick="window.location.href='polynomial-regression.html'"
+            >
+              <div class="sub-concept-left">
+                <span class="sub-concept-icon">🔄</span>
+                <div class="sub-concept-info">
+                  <h4>Polynomial Regression</h4>
+                  <p>Fit curved lines using polynomial functions</p>
+                </div>
+              </div>
+              <span class="sub-concept-status status-coming-soon"
+                >Coming Soon</span
+              >
+            </div>
+          </div>
         </div>
 
-        <div class="explanation">
-            <h3>📖 How It Works</h3>
-            <p><strong>Kernel Function:</strong> Measures similarity using a Gaussian (bell curve). Houses closer in size get higher weights.</p>
-            <p><strong>Prediction:</strong> Weighted average of all training house prices, where weights come from the kernel function.</p>
-            <p><strong>Try this:</strong> Move the sliders to see how predictions change!</p>
-            <ul>
-                <li><strong>Smaller kernel width:</strong> Only very similar houses matter (more local)</li>
-                <li><strong>Larger kernel width:</strong> All houses contribute more equally (more global)</li>
-            </ul>
+        <!-- Classification Category -->
+        <div class="category-card">
+          <div class="category-header">
+            <span class="category-icon">🏷️</span>
+            <h2 class="category-title">Classification</h2>
+          </div>
+          <p class="category-description">
+            Learn how to categorize data into different classes. Explore
+            decision boundaries and classification algorithms.
+          </p>
+          <div class="sub-concepts">
+            <div
+              class="sub-concept"
+              onclick="window.location.href='decision-trees.html'"
+            >
+              <div class="sub-concept-left">
+                <span class="sub-concept-icon">🌳</span>
+                <div class="sub-concept-info">
+                  <h4>Decision Trees</h4>
+                  <p>Tree-based classification with interactive splits</p>
+                </div>
+              </div>
+              <span class="sub-concept-status status-coming-soon"
+                >Coming Soon</span
+              >
+            </div>
+            <div
+              class="sub-concept"
+              onclick="window.location.href='svm-classification.html'"
+            >
+              <div class="sub-concept-left">
+                <span class="sub-concept-icon">⚔️</span>
+                <div class="sub-concept-info">
+                  <h4>Support Vector Machines</h4>
+                  <p>Find optimal decision boundaries with margins</p>
+                </div>
+              </div>
+              <span class="sub-concept-status status-coming-soon"
+                >Coming Soon</span
+              >
+            </div>
+            <div
+              class="sub-concept"
+              onclick="window.location.href='logistic-regression.html'"
+            >
+              <div class="sub-concept-left">
+                <span class="sub-concept-icon">📊</span>
+                <div class="sub-concept-info">
+                  <h4>Logistic Regression</h4>
+                  <p>Probabilistic classification with sigmoid function</p>
+                </div>
+              </div>
+              <span class="sub-concept-status status-coming-soon"
+                >Coming Soon</span
+              >
+            </div>
+          </div>
         </div>
+
+        <!-- Clustering Category -->
+        <div class="category-card">
+          <div class="category-header">
+            <span class="category-icon">🎯</span>
+            <h2 class="category-title">Clustering</h2>
+          </div>
+          <p class="category-description">
+            Discover patterns in unlabeled data by grouping similar points
+            together. Explore different clustering algorithms and their
+            behavior.
+          </p>
+          <div class="sub-concepts">
+            <div
+              class="sub-concept"
+              onclick="window.location.href='kmeans-clustering.html'"
+            >
+              <div class="sub-concept-left">
+                <span class="sub-concept-icon">🎯</span>
+                <div class="sub-concept-info">
+                  <h4>K-Means Clustering</h4>
+                  <p>Group data points around centroids</p>
+                </div>
+              </div>
+              <span class="sub-concept-status status-coming-soon"
+                >Coming Soon</span
+              >
+            </div>
+            <div
+              class="sub-concept"
+              onclick="window.location.href='hierarchical-clustering.html'"
+            >
+              <div class="sub-concept-left">
+                <span class="sub-concept-icon">🌲</span>
+                <div class="sub-concept-info">
+                  <h4>Hierarchical Clustering</h4>
+                  <p>Build clusters in a tree-like structure</p>
+                </div>
+              </div>
+              <span class="sub-concept-status status-coming-soon"
+                >Coming Soon</span
+              >
+            </div>
+            <div
+              class="sub-concept"
+              onclick="window.location.href='dbscan-clustering.html'"
+            >
+              <div class="sub-concept-left">
+                <span class="sub-concept-icon">🔍</span>
+                <div class="sub-concept-info">
+                  <h4>DBSCAN</h4>
+                  <p>Density-based clustering for irregular shapes</p>
+                </div>
+              </div>
+              <span class="sub-concept-status status-coming-soon"
+                >Coming Soon</span
+              >
+            </div>
+          </div>
+        </div>
+
+        <!-- Neural Networks Category -->
+        <div class="category-card">
+          <div class="category-header">
+            <span class="category-icon">🧠</span>
+            <h2 class="category-title">Neural Networks</h2>
+          </div>
+          <p class="category-description">
+            Explore the power of artificial neural networks. Watch them learn
+            and understand how they process information.
+          </p>
+          <div class="sub-concepts">
+            <div
+              class="sub-concept"
+              onclick="window.location.href='neural-network-training.html'"
+            >
+              <div class="sub-concept-left">
+                <span class="sub-concept-icon">⚡</span>
+                <div class="sub-concept-info">
+                  <h4>Interactive Training</h4>
+                  <p>Watch weights update in real-time</p>
+                </div>
+              </div>
+              <span class="sub-concept-status status-coming-soon"
+                >Coming Soon</span
+              >
+            </div>
+            <div
+              class="sub-concept"
+              onclick="window.location.href='activation-functions.html'"
+            >
+              <div class="sub-concept-left">
+                <span class="sub-concept-icon">📈</span>
+                <div class="sub-concept-info">
+                  <h4>Activation Functions</h4>
+                  <p>Explore ReLU, Sigmoid, and Tanh functions</p>
+                </div>
+              </div>
+              <span class="sub-concept-status status-coming-soon"
+                >Coming Soon</span
+              >
+            </div>
+            <div
+              class="sub-concept"
+              onclick="window.location.href='backpropagation.html'"
+            >
+              <div class="sub-concept-left">
+                <span class="sub-concept-icon">🔄</span>
+                <div class="sub-concept-info">
+                  <h4>Backpropagation</h4>
+                  <p>See how gradients flow through the network</p>
+                </div>
+              </div>
+              <span class="sub-concept-status status-coming-soon"
+                >Coming Soon</span
+              >
+            </div>
+          </div>
+        </div>
+
+        <!-- Ensemble Methods Category -->
+        <div class="category-card">
+          <div class="category-header">
+            <span class="category-icon">🎲</span>
+            <h2 class="category-title">Ensemble Methods</h2>
+          </div>
+          <p class="category-description">
+            Learn how combining multiple models can improve predictions. Explore
+            voting, bagging, and boosting techniques.
+          </p>
+          <div class="sub-concepts">
+            <div
+              class="sub-concept"
+              onclick="window.location.href='random-forest.html'"
+            >
+              <div class="sub-concept-left">
+                <span class="sub-concept-icon">🌲</span>
+                <div class="sub-concept-info">
+                  <h4>Random Forest</h4>
+                  <p>Multiple decision trees working together</p>
+                </div>
+              </div>
+              <span class="sub-concept-status status-coming-soon"
+                >Coming Soon</span
+              >
+            </div>
+            <div
+              class="sub-concept"
+              onclick="window.location.href='gradient-boosting.html'"
+            >
+              <div class="sub-concept-left">
+                <span class="sub-concept-icon">📈</span>
+                <div class="sub-concept-info">
+                  <h4>Gradient Boosting</h4>
+                  <p>Sequentially improve weak learners</p>
+                </div>
+              </div>
+              <span class="sub-concept-status status-coming-soon"
+                >Coming Soon</span
+              >
+            </div>
+            <div
+              class="sub-concept"
+              onclick="window.location.href='voting-classifier.html'"
+            >
+              <div class="sub-concept-left">
+                <span class="sub-concept-icon">🗳️</span>
+                <div class="sub-concept-info">
+                  <h4>Voting Classifier</h4>
+                  <p>Combine predictions from multiple models</p>
+                </div>
+              </div>
+              <span class="sub-concept-status status-coming-soon"
+                >Coming Soon</span
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer">
+        <p>
+          Built with ❤️ for interactive learning | Explore, Experiment, Learn
+        </p>
+      </div>
     </div>
 
     <script>
-        // Training data: [size, price] - matches our calculation example
-        const trainingData = [
-            [1000, 200],
-            [1200, 250],
-            [1500, 320],
-            [2000, 400],
-            [2200, 450]
-        ];
+      // Add some interactive effects
+      document.addEventListener("DOMContentLoaded", function () {
+        const cards = document.querySelectorAll(".category-card");
+        const subConcepts = document.querySelectorAll(".sub-concept");
 
-        let chart;
-        
-        // Gaussian kernel function
-        function gaussianKernel(x1, x2, width) {
-            const diff = x1 - x2;
-            return Math.exp(-(diff * diff) / (2 * width * width));
-        }
+        cards.forEach((card) => {
+          card.addEventListener("mouseenter", function () {
+            this.style.transform = "translateY(-10px) scale(1.02)";
+          });
 
-        function updatePrediction() {
-            const newSize = parseInt(document.getElementById('newHouseSize').value);
-            const kernelWidth = parseInt(document.getElementById('kernelWidth').value);
-            
-            // Update displayed values
-            const sizeValueEl = document.getElementById('sizeValue');
-            const widthValueEl = document.getElementById('widthValue');
-            
-            if (sizeValueEl) sizeValueEl.textContent = newSize;
-            if (widthValueEl) widthValueEl.textContent = kernelWidth;
-            
-            // Calculate weights and prediction
-            let weights = [];
-            let weightedSum = 0;
-            let totalWeight = 0;
-            
-            trainingData.forEach(([size, price], i) => {
-                const weight = gaussianKernel(newSize, size, kernelWidth);
-                weights.push(weight);
-                weightedSum += weight * price;
-                totalWeight += weight;
-            });
-            
-            const prediction = weightedSum / totalWeight;
-            
-            // Update side prediction
-            const sidePredictionEl = document.getElementById('sidePrediction');
-            const sideSizeEl = document.getElementById('sideSize');
-            
-            if (sidePredictionEl) {
-                sidePredictionEl.textContent = `$${Math.round(prediction * 1000).toLocaleString()}`;
-            }
-            if (sideSizeEl) {
-                sideSizeEl.textContent = `for ${newSize} sq ft`;
-            }
-            
-            // Update main prediction display (hidden but still functional)
-            const predictionTextEl = document.getElementById('predictionText');
-            if (predictionTextEl) {
-                predictionTextEl.innerHTML = 
-                    `Predicted price for ${newSize} sq ft house: <strong>$${Math.round(prediction * 1000).toLocaleString()}</strong>`;
-            }
-            
-            // Update weights display
-            const weightsTextEl = document.getElementById('weightsText');
-            if (weightsTextEl) {
-                let weightsHtml = '';
-                trainingData.forEach(([size, price], i) => {
-                    const weight = weights[i];
-                    const percentage = ((weight / totalWeight) * 100);
-                    weightsHtml += `<p>🏠 ${size} sq ft ($${price}k): Weight = ${weight.toFixed(3)} (${percentage.toFixed(1)}% influence)</p>`;
-                });
-                weightsTextEl.innerHTML = weightsHtml;
-            }
-            
-            // Update chart
-            if (chart) {
-                updateChart(newSize, kernelWidth, weights, prediction);
-            }
-        }
-
-        function updateChart(newSize, kernelWidth, weights, prediction) {
-            // Generate smooth curve data
-            const curveData = [];
-            for (let x = 800; x <= 2500; x += 20) {
-                let weightedSum = 0;
-                let totalWeight = 0;
-                
-                trainingData.forEach(([size, price]) => {
-                    const weight = gaussianKernel(x, size, kernelWidth);
-                    weightedSum += weight * price;
-                    totalWeight += weight;
-                });
-                
-                curveData.push({x: x, y: weightedSum / totalWeight});
-            }
-            
-            // Training points with size-based styling
-            const trainingPoints = trainingData.map(([size, price], i) => ({
-                x: size,
-                y: price,
-                weight: weights[i]
-            }));
-            
-            const maxWeight = Math.max(...weights);
-            
-            chart.data = {
-                datasets: [
-                    {
-                        label: 'Kernelized Regression Curve',
-                        data: curveData,
-                        type: 'line',
-                        borderColor: 'rgb(102, 126, 234)',
-                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
-                        borderWidth: 3,
-                        fill: true,
-                        tension: 0.4,
-                        pointRadius: 0
-                    },
-                    {
-                        label: 'Training Houses',
-                        data: trainingPoints,
-                        type: 'scatter',
-                        backgroundColor: trainingPoints.map(point => 
-                            `rgba(40, 167, 69, ${0.3 + 0.7 * (point.weight / maxWeight)})`
-                        ),
-                        borderColor: trainingPoints.map(point => 
-                            `rgba(40, 167, 69, ${0.5 + 0.5 * (point.weight / maxWeight)})`
-                        ),
-                        borderWidth: trainingPoints.map(point => 2 + 3 * (point.weight / maxWeight)),
-                        pointRadius: trainingPoints.map(point => 8 + 8 * (point.weight / maxWeight))
-                    },
-                    {
-                        label: 'New House Prediction',
-                        data: [{x: newSize, y: prediction}],
-                        type: 'scatter',
-                        backgroundColor: 'rgba(220, 53, 69, 0.8)',
-                        borderColor: 'rgb(220, 53, 69)',
-                        borderWidth: 3,
-                        pointRadius: 12,
-                        pointStyle: 'triangle'
-                    }
-                ]
-            };
-            
-            chart.update('none');
-        }
-
-        // Initialize everything when DOM is loaded
-        document.addEventListener('DOMContentLoaded', function() {
-            const ctx = document.getElementById('regressionChart').getContext('2d');
-            
-            // Initialize chart
-            chart = new Chart(ctx, {
-                type: 'scatter',
-                data: {},
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: true,
-                            position: 'top'
-                        },
-                        title: {
-                            display: true,
-                            text: 'House Size vs Price with Kernelized Regression'
-                        }
-                    },
-                    scales: {
-                        x: {
-                            title: {
-                                display: true,
-                                text: 'House Size (sq ft)'
-                            },
-                            min: 800,
-                            max: 2500
-                        },
-                        y: {
-                            title: {
-                                display: true,
-                                text: 'Price ($1000s)'
-                            },
-                            min: 150,
-                            max: 500
-                        }
-                    },
-                    elements: {
-                        point: {
-                            hoverRadius: 8
-                        }
-                    }
-                }
-            });
-
-            // Event listeners
-            const newHouseSizeEl = document.getElementById('newHouseSize');
-            const kernelWidthEl = document.getElementById('kernelWidth');
-            
-            if (newHouseSizeEl) {
-                newHouseSizeEl.addEventListener('input', updatePrediction);
-            }
-            if (kernelWidthEl) {
-                kernelWidthEl.addEventListener('input', updatePrediction);
-            }
-
-            // Initial update
-            updatePrediction();
+          card.addEventListener("mouseleave", function () {
+            this.style.transform = "translateY(0) scale(1)";
+          });
         });
+
+        subConcepts.forEach((concept) => {
+          concept.addEventListener("mouseenter", function () {
+            this.style.transform = "translateX(5px) scale(1.02)";
+          });
+
+          concept.addEventListener("mouseleave", function () {
+            this.style.transform = "translateX(0) scale(1)";
+          });
+        });
+      });
     </script>
-</body>
+  </body>
 </html>
