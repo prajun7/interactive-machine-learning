@@ -1,0 +1,987 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gradient Descent Visualization</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 20px;
+      }
+
+      .container {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 30px;
+      }
+
+      h1 {
+        text-align: center;
+        color: #333;
+        margin-bottom: 10px;
+        font-size: 2.2em;
+      }
+
+      .subtitle {
+        text-align: center;
+        color: #666;
+        margin-bottom: 30px;
+        font-size: 1.1em;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+        margin-bottom: 30px;
+      }
+
+      .panel {
+        background: #f8f9fa;
+        border-radius: 15px;
+        padding: 20px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+
+      .panel h2 {
+        color: #495057;
+        margin-bottom: 15px;
+        font-size: 1.3em;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      canvas {
+        border-radius: 10px;
+        background: white;
+        width: 100%;
+        height: 400px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      }
+
+      .controls {
+        background: #f8f9fa;
+        border-radius: 15px;
+        padding: 25px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+
+      .control-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 20px;
+      }
+
+      .control-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      label {
+        font-weight: 600;
+        color: #495057;
+        font-size: 0.9em;
+      }
+
+      input[type="range"] {
+        width: 100%;
+        height: 6px;
+        border-radius: 3px;
+        background: #dee2e6;
+        outline: none;
+      }
+
+      input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: #667eea;
+        cursor: pointer;
+      }
+
+      .value-display {
+        background: white;
+        padding: 8px 12px;
+        border-radius: 6px;
+        font-family: "Courier New", monospace;
+        font-size: 0.95em;
+        color: #495057;
+        text-align: center;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        border: 1px solid #e9ecef;
+      }
+
+      button {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-size: 1em;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        margin: 5px;
+      }
+
+      button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+      }
+
+      button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .button-group {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 15px;
+        margin-top: 15px;
+      }
+
+      .stat-item {
+        background: white;
+        padding: 15px;
+        border-radius: 8px;
+        text-align: center;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        border: 1px solid #e9ecef;
+      }
+
+      .stat-label {
+        font-size: 0.85em;
+        color: #6c757d;
+        margin-bottom: 8px;
+        font-weight: 500;
+      }
+
+      .stat-value {
+        font-size: 1.4em;
+        font-weight: bold;
+        color: #495057;
+        font-family: "Courier New", monospace;
+      }
+
+      .legend {
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+        margin-top: 15px;
+        flex-wrap: wrap;
+      }
+
+      .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.9em;
+        color: #495057;
+        padding: 5px 10px;
+        background: white;
+        border-radius: 6px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      }
+
+      .legend-color {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+      }
+
+      .info-box {
+        background: white;
+        border-left: 4px solid #667eea;
+        padding: 20px;
+        border-radius: 8px;
+        margin-top: 20px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      }
+
+      .info-box h3 {
+        color: #495057;
+        margin-bottom: 15px;
+        font-size: 1.2em;
+      }
+
+      .formula-box {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        margin: 15px 0;
+        border: 1px solid #e9ecef;
+      }
+
+      .formula {
+        font-family: "Courier New", monospace;
+        color: #495057;
+        font-size: 1.1em;
+        text-align: center;
+        margin: 8px 0;
+      }
+
+      .scenario-box {
+        background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+        padding: 20px;
+        border-radius: 10px;
+        margin: 20px 0;
+        border-left: 4px solid #2196f3;
+      }
+
+      .warning-box {
+        background: linear-gradient(135deg, #fff3e0, #ffe0b2);
+        padding: 15px;
+        border-radius: 8px;
+        margin: 15px 0;
+        border-left: 4px solid #ff9800;
+      }
+
+      .success-box {
+        background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+        padding: 15px;
+        border-radius: 8px;
+        margin: 15px 0;
+        border-left: 4px solid #4caf50;
+      }
+
+      /* Back button styling */
+      .back-link {
+        text-decoration: none;
+        color: #667eea;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 20px;
+      }
+
+      .back-link:hover {
+        color: #5a67d8;
+        text-decoration: underline;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <a href="index.html" class="back-link">← Back to Interactive ML</a>
+
+      <h1>🎯 Gradient Descent: Training a Simple Neural Network</h1>
+      <div class="subtitle">
+        Watch how we find the perfect weights to minimize prediction errors
+      </div>
+
+      <div class="scenario-box">
+        <h3>🧠 The Problem: Training a Simple Neural Network</h3>
+        <p>
+          <strong>Imagine:</strong> We have a neural network with 2 weights (w₁,
+          w₂) trying to predict a target value of <strong>5</strong>.
+        </p>
+        <p>
+          <strong>Current Prediction:</strong>
+          <span id="currentPrediction">0.00</span> = w₁ × 2 + w₂ × 1
+        </p>
+        <p><strong>Target:</strong> 5.00 (what we want to predict)</p>
+        <p>
+          <strong>Error:</strong> <span id="currentError">0.00</span> =
+          |Prediction - Target|
+        </p>
+      </div>
+
+      <div class="grid">
+        <div class="panel">
+          <h2>📈 Loss Landscape (Error Surface)</h2>
+          <canvas id="lossCanvas"></canvas>
+          <div class="legend">
+            <div class="legend-item">
+              <div class="legend-color" style="background: #4caf50"></div>
+              <span>Optimal Weights (w₁=2, w₂=1)</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color" style="background: #f44336"></div>
+              <span>Current Weights</span>
+            </div>
+            <div class="legend-item">
+              <div
+                class="legend-color"
+                style="background: rgba(255, 165, 0, 0.8)"
+              ></div>
+              <span>Learning Path</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2>📊 Training Progress</h2>
+          <canvas id="progressCanvas"></canvas>
+          <div class="stats">
+            <div class="stat-item">
+              <div class="stat-label">Current Loss</div>
+              <div class="stat-value" id="currentLoss">0.000</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-label">Target Loss</div>
+              <div class="stat-value">0.000</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-label">Epoch</div>
+              <div class="stat-value" id="iteration">0</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-label">Convergence</div>
+              <div class="stat-value" id="convergence">0%</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <h2>⚙️ Training Parameters</h2>
+        <div class="control-grid">
+          <div class="control-group">
+            <label for="learningRate">Learning Rate (α)</label>
+            <input
+              type="range"
+              id="learningRate"
+              min="0.01"
+              max="1.0"
+              step="0.01"
+              value="0.1"
+            />
+            <div class="value-display" id="learningRateValue">0.10</div>
+          </div>
+          <div class="control-group">
+            <label for="startX">Initial Weight 1 (w₁)</label>
+            <input
+              type="range"
+              id="startX"
+              min="-2"
+              max="6"
+              step="0.1"
+              value="0"
+            />
+            <div class="value-display" id="startXValue">0.0</div>
+          </div>
+          <div class="control-group">
+            <label for="startY">Initial Weight 2 (w₂)</label>
+            <input
+              type="range"
+              id="startY"
+              min="-2"
+              max="6"
+              step="0.1"
+              value="0"
+            />
+            <div class="value-display" id="startYValue">0.0</div>
+          </div>
+          <div class="control-group">
+            <label for="speed">Training Speed</label>
+            <input
+              type="range"
+              id="speed"
+              min="10"
+              max="1000"
+              step="10"
+              value="100"
+            />
+            <div class="value-display" id="speedValue">100ms</div>
+          </div>
+        </div>
+
+        <div class="button-group">
+          <button id="startBtn">▶️ Start Training</button>
+          <button id="pauseBtn" disabled>⏸️ Pause</button>
+          <button id="resetBtn">🔄 Reset</button>
+          <button id="stepBtn">👣 Single Step</button>
+        </div>
+      </div>
+
+      <div class="info-box">
+        <h3>🎓 Understanding the Math</h3>
+
+        <div class="formula-box">
+          <h4>1️⃣ Neural Network Prediction:</h4>
+          <div class="formula">Prediction = w₁ × input₁ + w₂ × input₂</div>
+          <div class="formula">Prediction = w₁ × 2 + w₂ × 1</div>
+          <p style="margin-top: 10px; color: #666">
+            We have fixed inputs (2, 1) and want to find weights that predict
+            target value 5.
+          </p>
+        </div>
+
+        <div class="formula-box">
+          <h4>2️⃣ Loss Function (Mean Squared Error):</h4>
+          <div class="formula">Loss = ½(Prediction - Target)²</div>
+          <div class="formula">Loss = ½(w₁×2 + w₂×1 - 5)²</div>
+          <p style="margin-top: 10px; color: #666">
+            This measures how wrong our prediction is. Lower loss = better
+            prediction!
+          </p>
+        </div>
+
+        <div class="formula-box">
+          <h4>3️⃣ Finding the Optimal Weights:</h4>
+          <div class="formula">
+            If w₁×2 + w₂×1 = 5, then Loss = 0 (perfect!)
+          </div>
+          <div class="formula">
+            One solution: w₁ = 2, w₂ = 3 → 2×2 + 3×1 = 7... wait! 🤔
+          </div>
+          <div class="formula">
+            Correct solution: w₁ = 2, w₂ = 1 → 2×2 + 1×1 = 5 ✓
+          </div>
+        </div>
+
+        <div class="formula-box">
+          <h4>4️⃣ Gradient Descent Updates:</h4>
+          <div class="formula">
+            ∂Loss/∂w₁ = (Prediction - Target) × input₁ = (Prediction - 5) × 2
+          </div>
+          <div class="formula">
+            ∂Loss/∂w₂ = (Prediction - Target) × input₂ = (Prediction - 5) × 1
+          </div>
+          <div class="formula">w₁ₙₑw = w₁ₒₗd - α × ∂Loss/∂w₁</div>
+          <div class="formula">w₂ₙₑw = w₂ₒₗd - α × ∂Loss/∂w₂</div>
+        </div>
+
+        <div class="success-box">
+          <h4>🎯 The Goal</h4>
+          <p><strong>Perfect weights:</strong> w₁ = 2.0, w₂ = 1.0</p>
+          <p>
+            <strong>Perfect prediction:</strong> 2×2 + 1×1 = 5 (exactly our
+            target!)
+          </p>
+          <p><strong>Perfect loss:</strong> 0.000 (no error)</p>
+          <p>
+            The red dot should reach the green dot as training progresses! 🎉
+          </p>
+        </div>
+
+        <div class="warning-box">
+          <h4>⚠️ Learning Rate Tips</h4>
+          <p>
+            <strong>Too high (>0.5):</strong> Might overshoot and oscillate
+            around the minimum
+          </p>
+          <p>
+            <strong>Too low (<0.05):</strong> Very slow learning, takes many
+            steps
+          </p>
+          <p>
+            <strong>Just right (0.1-0.3):</strong> Smooth, efficient convergence
+            to the green dot
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Neural network setup
+      const INPUT1 = 2;
+      const INPUT2 = 1;
+      const TARGET = 5;
+      const OPTIMAL_W1 = 2.0; // One possible optimal point
+      const OPTIMAL_W2 = 1.0;
+
+      // Global variables
+      let interval = null;
+      let isRunning = false;
+      let currentX, currentY; // w1, w2
+      let path = [];
+      let lossHistory = [];
+      let iterationCount = 0;
+
+      // Get DOM elements
+      const lossCanvas = document.getElementById("lossCanvas");
+      const progressCanvas = document.getElementById("progressCanvas");
+      const lossCtx = lossCanvas.getContext("2d");
+      const progressCtx = progressCanvas.getContext("2d");
+
+      const startBtn = document.getElementById("startBtn");
+      const pauseBtn = document.getElementById("pauseBtn");
+      const resetBtn = document.getElementById("resetBtn");
+      const stepBtn = document.getElementById("stepBtn");
+
+      const learningRateSlider = document.getElementById("learningRate");
+      const startXSlider = document.getElementById("startX");
+      const startYSlider = document.getElementById("startY");
+      const speedSlider = document.getElementById("speed");
+
+      const currentPredictionEl = document.getElementById("currentPrediction");
+      const currentErrorEl = document.getElementById("currentError");
+      const currentLossEl = document.getElementById("currentLoss");
+      const iterationEl = document.getElementById("iteration");
+      const convergenceEl = document.getElementById("convergence");
+
+      // Initialize canvases
+      function initCanvases() {
+        const rect = lossCanvas.getBoundingClientRect();
+        lossCanvas.width = rect.width * window.devicePixelRatio;
+        lossCanvas.height = rect.height * window.devicePixelRatio;
+        lossCtx.scale(window.devicePixelRatio, window.devicePixelRatio);
+        progressCanvas.width = rect.width * window.devicePixelRatio;
+        progressCanvas.height = rect.height * window.devicePixelRatio;
+        progressCtx.scale(window.devicePixelRatio, window.devicePixelRatio);
+      }
+
+      // Neural network prediction
+      function predict(w1, w2) {
+        return w1 * INPUT1 + w2 * INPUT2;
+      }
+
+      // Loss function (Mean Squared Error)
+      function lossFunction(w1, w2) {
+        const prediction = predict(w1, w2);
+        const error = prediction - TARGET;
+        return 0.5 * error * error;
+      }
+
+      // Gradient of loss function
+      function gradient(w1, w2) {
+        const prediction = predict(w1, w2);
+        const error = prediction - TARGET;
+        return {
+          dw1: error * INPUT1,
+          dw2: error * INPUT2,
+        };
+      }
+
+      // Map coordinates to canvas (assuming canvas.width and height are set)
+      function mapToCanvas(w1, w2, canvas) {
+        const padding = 50;
+        const rangeW1 = 8; // -2 to 6
+        const rangeW2 = 8; // -2 to 6
+        const scaleX =
+          (canvas.width / window.devicePixelRatio - 2 * padding) / rangeW1;
+        const scaleY =
+          (canvas.height / window.devicePixelRatio - 2 * padding) / rangeW2;
+        return {
+          x: padding + (w1 + 2) * scaleX,
+          y:
+            canvas.height / window.devicePixelRatio -
+            padding -
+            (w2 + 2) * scaleY,
+        };
+      }
+
+      // Helper to draw a contour line for 2*w1 + w2 = b
+      function drawContourLine(ctx, b) {
+        let points = [];
+
+        // Left boundary w1 = -2
+        let w2 = b - 2 * -2;
+        if (w2 >= -2 && w2 <= 6) points.push({ w1: -2, w2 });
+
+        // Right boundary w1 = 6
+        w2 = b - 2 * 6;
+        if (w2 >= -2 && w2 <= 6) points.push({ w1: 6, w2 });
+
+        // Bottom boundary w2 = -2
+        let w1 = (b - -2) / 2;
+        if (w1 >= -2 && w1 <= 6) points.push({ w1, w2: -2 });
+
+        // Top boundary w2 = 6
+        w1 = (b - 6) / 2;
+        if (w1 >= -2 && w1 <= 6) points.push({ w1, w2: 6 });
+
+        if (points.length >= 2) {
+          const p1 = mapToCanvas(points[0].w1, points[0].w2, lossCanvas);
+          const p2 = mapToCanvas(points[1].w1, points[1].w2, lossCanvas);
+          ctx.beginPath();
+          ctx.moveTo(p1.x, p1.y);
+          ctx.lineTo(p2.x, p2.y);
+          ctx.stroke();
+        }
+      }
+
+      // Draw loss surface
+      function drawLossSurface() {
+        const canvasWidth = lossCanvas.width / window.devicePixelRatio;
+        const canvasHeight = lossCanvas.height / window.devicePixelRatio;
+        lossCtx.clearRect(0, 0, canvasWidth, canvasHeight);
+
+        // Draw contours as parallel lines
+        const contourLevels = [0.5, 2, 8, 18, 32, 50, 72, 98];
+        contourLevels.forEach((level, i) => {
+          const opacity = 0.15 + i * 0.08;
+          lossCtx.strokeStyle = `rgba(102, 126, 234, ${opacity})`;
+          lossCtx.lineWidth = 1;
+          const c = Math.sqrt(2 * level);
+          drawContourLine(lossCtx, 5 + c);
+          drawContourLine(lossCtx, 5 - c);
+        });
+
+        // Draw the minimum line (loss=0)
+        lossCtx.strokeStyle = "rgba(76, 175, 80, 0.5)";
+        lossCtx.lineWidth = 2;
+        drawContourLine(lossCtx, 5);
+
+        // Draw grid
+        lossCtx.strokeStyle = "#e9ecef";
+        lossCtx.lineWidth = 1;
+
+        // Vertical lines (w1)
+        for (let w1 = -2; w1 <= 6; w1 += 1) {
+          const startPoint = mapToCanvas(w1, -2, lossCanvas);
+          const endPoint = mapToCanvas(w1, 6, lossCanvas);
+          lossCtx.beginPath();
+          lossCtx.moveTo(startPoint.x, startPoint.y);
+          lossCtx.lineTo(endPoint.x, endPoint.y);
+          lossCtx.stroke();
+        }
+
+        // Horizontal lines (w2)
+        for (let w2 = -2; w2 <= 6; w2 += 1) {
+          const startPoint = mapToCanvas(-2, w2, lossCanvas);
+          const endPoint = mapToCanvas(6, w2, lossCanvas);
+          lossCtx.beginPath();
+          lossCtx.moveTo(startPoint.x, startPoint.y);
+          lossCtx.lineTo(endPoint.x, endPoint.y);
+          lossCtx.stroke();
+        }
+
+        // Draw axis labels and numbers
+        lossCtx.fillStyle = "#6c757d";
+        lossCtx.font = "12px Arial";
+        lossCtx.textAlign = "center";
+
+        // W1 axis (bottom)
+        for (let w1 = -2; w1 <= 6; w1 += 1) {
+          const point = mapToCanvas(w1, -2, lossCanvas);
+          lossCtx.fillText(w1.toString(), point.x, point.y + 20);
+        }
+        lossCtx.fillText("w₁ (Weight 1)", canvasWidth / 2, canvasHeight - 15);
+
+        // W2 axis (left)
+        lossCtx.textAlign = "right";
+        for (let w2 = -2; w2 <= 6; w2 += 1) {
+          const point = mapToCanvas(-2, w2, lossCanvas);
+          lossCtx.fillText(w2.toString(), point.x - 10, point.y + 4);
+        }
+        lossCtx.save();
+        lossCtx.translate(20, canvasHeight / 2);
+        lossCtx.rotate(-Math.PI / 2);
+        lossCtx.textAlign = "center";
+        lossCtx.fillText("w₂ (Weight 2)", 0, 0);
+        lossCtx.restore();
+
+        // Draw optimal point (green) - one example on the minimum line
+        const optimalPoint = mapToCanvas(OPTIMAL_W1, OPTIMAL_W2, lossCanvas);
+        lossCtx.fillStyle = "#4CAF50";
+        lossCtx.beginPath();
+        lossCtx.arc(optimalPoint.x, optimalPoint.y, 10, 0, 2 * Math.PI);
+        lossCtx.fill();
+        lossCtx.fillStyle = "white";
+        lossCtx.font = "bold 12px Arial";
+        lossCtx.textAlign = "center";
+        lossCtx.fillText("★", optimalPoint.x, optimalPoint.y + 4);
+
+        // Draw path
+        if (path.length > 1) {
+          lossCtx.strokeStyle = "rgba(255, 165, 0, 0.8)";
+          lossCtx.lineWidth = 3;
+          lossCtx.beginPath();
+          path.forEach((point, i) => {
+            const canvasPoint = mapToCanvas(point.w1, point.w2, lossCanvas);
+            if (i === 0) {
+              lossCtx.moveTo(canvasPoint.x, canvasPoint.y);
+            } else {
+              lossCtx.lineTo(canvasPoint.x, canvasPoint.y);
+            }
+          });
+          lossCtx.stroke();
+
+          // Draw path points
+          path.forEach((point, i) => {
+            if (i > 0 && i < path.length - 1) {
+              const canvasPoint = mapToCanvas(point.w1, point.w2, lossCanvas);
+              lossCtx.fillStyle = "rgba(255, 165, 0, 0.6)";
+              lossCtx.beginPath();
+              lossCtx.arc(canvasPoint.x, canvasPoint.y, 4, 0, 2 * Math.PI);
+              lossCtx.fill();
+            }
+          });
+        }
+
+        // Draw current point (red)
+        const currentPoint = mapToCanvas(currentX, currentY, lossCanvas);
+        lossCtx.fillStyle = "#f44336";
+        lossCtx.beginPath();
+        lossCtx.arc(currentPoint.x, currentPoint.y, 10, 0, 2 * Math.PI);
+        lossCtx.fill();
+
+        // Draw descent arrow (-gradient direction)
+        const grad = gradient(currentX, currentY);
+        const gradMagnitude = Math.sqrt(
+          grad.dw1 * grad.dw1 + grad.dw2 * grad.dw2
+        );
+        if (gradMagnitude > 0.001) {
+          const arrowScale = 30;
+          const arrowEndX =
+            currentPoint.x - (grad.dw1 / gradMagnitude) * arrowScale;
+          const arrowEndY =
+            currentPoint.y + (grad.dw2 / gradMagnitude) * arrowScale; // Note: y inverted for w2
+
+          lossCtx.strokeStyle = "#f44336";
+          lossCtx.lineWidth = 3;
+          lossCtx.beginPath();
+          lossCtx.moveTo(currentPoint.x, currentPoint.y);
+          lossCtx.lineTo(arrowEndX, arrowEndY);
+          lossCtx.stroke();
+
+          // Arrowhead
+          const angle = Math.atan2(
+            arrowEndY - currentPoint.y,
+            arrowEndX - currentPoint.x
+          );
+          lossCtx.beginPath();
+          lossCtx.moveTo(arrowEndX, arrowEndY);
+          lossCtx.lineTo(
+            arrowEndX - 10 * Math.cos(angle - Math.PI / 6),
+            arrowEndY - 10 * Math.sin(angle - Math.PI / 6)
+          );
+          lossCtx.lineTo(
+            arrowEndX - 10 * Math.cos(angle + Math.PI / 6),
+            arrowEndY - 10 * Math.sin(angle + Math.PI / 6)
+          );
+          lossCtx.closePath();
+          lossCtx.fillStyle = "#f44336";
+          lossCtx.fill();
+        }
+      }
+
+      // Draw progress chart
+      function drawProgress() {
+        const canvasWidth = progressCanvas.width / window.devicePixelRatio;
+        const canvasHeight = progressCanvas.height / window.devicePixelRatio;
+        progressCtx.clearRect(0, 0, canvasWidth, canvasHeight);
+
+        if (lossHistory.length === 0) return;
+
+        const padding = 50;
+        const width = canvasWidth - 2 * padding;
+        const height = canvasHeight - 2 * padding;
+
+        let maxLoss = Math.max(...lossHistory);
+        maxLoss = Math.max(maxLoss, 1); // Minimum max for scale
+
+        // Draw axes
+        progressCtx.strokeStyle = "#dee2e6";
+        progressCtx.lineWidth = 2;
+        progressCtx.beginPath();
+        progressCtx.moveTo(padding, padding);
+        progressCtx.lineTo(padding, canvasHeight - padding);
+        progressCtx.lineTo(canvasWidth - padding, canvasHeight - padding);
+        progressCtx.stroke();
+
+        // Draw y grid lines and labels
+        progressCtx.strokeStyle = "#e9ecef";
+        progressCtx.lineWidth = 1;
+        progressCtx.fillStyle = "#6c757d";
+        progressCtx.font = "10px Arial";
+        progressCtx.textAlign = "right";
+
+        for (let i = 0; i <= 5; i++) {
+          const y = canvasHeight - padding - (height / 5) * i;
+          progressCtx.beginPath();
+          progressCtx.moveTo(padding, y);
+          progressCtx.lineTo(canvasWidth - padding, y);
+          progressCtx.stroke();
+
+          const value = maxLoss * (i / 5);
+          progressCtx.fillText(value.toFixed(2), padding - 5, y + 3);
+        }
+
+        // Draw x grid lines and labels
+        progressCtx.textAlign = "center";
+        for (let i = 0; i <= 5; i++) {
+          const x = padding + (width / 5) * i;
+          progressCtx.beginPath();
+          progressCtx.moveTo(x, padding);
+          progressCtx.lineTo(x, canvasHeight - padding);
+          progressCtx.stroke();
+
+          const iter = Math.round(lossHistory.length * (i / 5));
+          progressCtx.fillText(iter, x, canvasHeight - padding + 15);
+        }
+
+        // Axis labels
+        progressCtx.fillText("Iterations", canvasWidth / 2, canvasHeight - 5);
+        progressCtx.save();
+        progressCtx.translate(15, canvasHeight / 2);
+        progressCtx.rotate(-Math.PI / 2);
+        progressCtx.fillText("Loss", 0, 0);
+        progressCtx.restore();
+
+        // Draw loss curve
+        if (lossHistory.length > 1) {
+          progressCtx.strokeStyle = "#667eea";
+          progressCtx.lineWidth = 3;
+          progressCtx.beginPath();
+          lossHistory.forEach((loss, i) => {
+            const x = padding + (i / (lossHistory.length - 1)) * width;
+            const y = canvasHeight - padding - (loss / maxLoss) * height;
+            if (i === 0) {
+              progressCtx.moveTo(x, y);
+            } else {
+              progressCtx.lineTo(x, y);
+            }
+          });
+          progressCtx.stroke();
+        }
+      }
+
+      // Update stats in DOM
+      function updateStats() {
+        const prediction = predict(currentX, currentY);
+        const loss = lossFunction(currentX, currentY);
+        const error = Math.abs(prediction - TARGET);
+
+        currentPredictionEl.textContent = prediction.toFixed(2);
+        currentErrorEl.textContent = error.toFixed(2);
+        currentLossEl.textContent = loss.toFixed(3);
+        iterationEl.textContent = iterationCount;
+
+        const initialLoss = lossHistory[0] || loss;
+        let convergence =
+          initialLoss > 0 ? (1 - loss / initialLoss) * 100 : 100;
+        convergence = Math.min(100, convergence);
+        convergenceEl.textContent = convergence.toFixed(1) + "%";
+      }
+
+      // Single update step
+      function update() {
+        const lr = parseFloat(learningRateSlider.value);
+        const grad = gradient(currentX, currentY);
+
+        currentX -= lr * grad.dw1;
+        currentY -= lr * grad.dw2;
+
+        const loss = lossFunction(currentX, currentY);
+        path.push({ w1: currentX, w2: currentY });
+        lossHistory.push(loss);
+        iterationCount++;
+
+        updateStats();
+        drawLossSurface();
+        drawProgress();
+
+        if (loss < 0.001) {
+          pauseAnimation();
+        }
+      }
+
+      // Start animation
+      function startAnimation() {
+        if (isRunning) return;
+        if (path.length === 0) reset();
+        isRunning = true;
+        startBtn.disabled = true;
+        pauseBtn.disabled = false;
+        const speed = parseInt(speedSlider.value);
+        interval = setInterval(update, speed);
+      }
+
+      // Pause animation
+      function pauseAnimation() {
+        if (!isRunning) return;
+        isRunning = false;
+        clearInterval(interval);
+        startBtn.disabled = false;
+        pauseBtn.disabled = true;
+      }
+
+      // Reset everything
+      function reset() {
+        pauseAnimation();
+        currentX = parseFloat(startXSlider.value);
+        currentY = parseFloat(startYSlider.value);
+        path = [{ w1: currentX, w2: currentY }];
+        lossHistory = [lossFunction(currentX, currentY)];
+        iterationCount = 0;
+        updateStats();
+        drawLossSurface();
+        drawProgress();
+      }
+
+      // Event listeners
+      window.addEventListener("load", () => {
+        initCanvases();
+        reset();
+
+        learningRateSlider.addEventListener("input", () => {
+          document.getElementById("learningRateValue").textContent = parseFloat(
+            learningRateSlider.value
+          ).toFixed(2);
+        });
+
+        startXSlider.addEventListener("input", () => {
+          document.getElementById("startXValue").textContent = parseFloat(
+            startXSlider.value
+          ).toFixed(1);
+          if (!isRunning) reset();
+        });
+
+        startYSlider.addEventListener("input", () => {
+          document.getElementById("startYValue").textContent = parseFloat(
+            startYSlider.value
+          ).toFixed(1);
+          if (!isRunning) reset();
+        });
+
+        speedSlider.addEventListener("input", () => {
+          document.getElementById("speedValue").textContent =
+            speedSlider.value + "ms";
+          if (isRunning) {
+            clearInterval(interval);
+            interval = setInterval(update, parseInt(speedSlider.value));
+          }
+        });
+
+        startBtn.addEventListener("click", startAnimation);
+        pauseBtn.addEventListener("click", pauseAnimation);
+        resetBtn.addEventListener("click", reset);
+        stepBtn.addEventListener("click", () => {
+          if (path.length === 0) reset();
+          if (!isRunning) update();
+        });
+      });
+
+      // Handle resize
+      window.addEventListener("resize", () => {
+        initCanvases();
+        drawLossSurface();
+        drawProgress();
+      });
+    </script>
+  </body>
+</html>
+```
