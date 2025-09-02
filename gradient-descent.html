@@ -272,6 +272,12 @@
         border-left: 4px solid #4caf50;
       }
 
+      /* Status indicator styling */
+      #statusIndicator .stat-value {
+        font-size: 1.1em;
+        font-weight: bold;
+      }
+
       /* Back button styling */
       .back-link {
         text-decoration: none;
@@ -364,6 +370,10 @@
             <div class="stat-item">
               <div class="stat-label">Convergence</div>
               <div class="stat-value" id="convergence">0%</div>
+            </div>
+            <div class="stat-item" id="statusIndicator" style="display: none">
+              <div class="stat-label">Status</div>
+              <div class="stat-value" id="statusValue">Stable</div>
             </div>
           </div>
         </div>
@@ -520,6 +530,24 @@
           </div>
           <p style="margin-top: 10px; color: #666">
             The ball rolls in the direction opposite to the gradient (downhill)
+          </p>
+        </div>
+
+        <div class="info-box" style="margin-top: 20px">
+          <h4>📊 Understanding the Metrics</h4>
+          <p>
+            <strong>Convergence Percentage:</strong> Shows how much the loss has
+            decreased from the starting point. Ranges from 0% (no improvement)
+            to 100% (perfect convergence).
+          </p>
+          <p>
+            <strong>Status Indicator:</strong> Automatically appears to show if
+            the algorithm is converging (✅), unstable (⚠️), or diverging (⚠️).
+          </p>
+          <p>
+            <strong>Loss Clamping:</strong> When loss values become extremely
+            large due to high learning rates, they're capped at 1000 for display
+            purposes to keep the visualization readable.
           </p>
         </div>
       </div>
@@ -907,8 +935,15 @@
         const width = canvasWidth - 2 * padding;
         const height = canvasHeight - 2 * padding;
 
+        // Handle large loss values for better visualization
         let maxLoss = Math.max(...lossHistory);
         maxLoss = Math.max(maxLoss, 1); // Minimum max for scale
+
+        // Cap the maximum loss for display to prevent extremely large scales
+        const displayMaxLoss = Math.min(maxLoss, 1000);
+        if (maxLoss > 1000) {
+          maxLoss = 1000; // Use capped value for scaling
+        }
 
         // Draw axes
         progressCtx.strokeStyle = "#dee2e6";
@@ -985,14 +1020,57 @@
 
         currentPredictionEl.textContent = currentTheta.toFixed(2);
         currentErrorEl.textContent = loss1DVal.toFixed(3);
-        currentLossEl.textContent = loss.toFixed(3);
+
+        // Clamp loss to reasonable bounds for display
+        const clampedLoss = Math.min(loss, 1000); // Cap at 1000 for display
+        currentLossEl.textContent = clampedLoss.toFixed(3);
+        if (loss > 1000) {
+          currentLossEl.textContent += "+";
+        }
+
         iterationEl.textContent = iterationCount;
 
+        // Calculate convergence percentage with proper bounds
         const initialLoss = lossHistory[0] || loss;
-        let convergence =
-          initialLoss > 0 ? (1 - loss / initialLoss) * 100 : 100;
-        convergence = Math.min(100, convergence);
+        let convergence = 0;
+
+        if (initialLoss > 0 && loss <= initialLoss) {
+          // Normal case: loss is decreasing
+          convergence = ((initialLoss - loss) / initialLoss) * 100;
+        } else if (initialLoss > 0 && loss > initialLoss) {
+          // Loss is increasing (diverging)
+          convergence = 0;
+        } else if (initialLoss <= 0) {
+          // Edge case: initial loss was 0 or negative
+          convergence = loss === 0 ? 100 : 0;
+        }
+
+        // Clamp convergence to sensible range: 0% to 100%
+        convergence = Math.max(0, Math.min(100, convergence));
         convergenceEl.textContent = convergence.toFixed(1) + "%";
+
+        // Show status indicator for diverging cases
+        const statusIndicator = document.getElementById("statusIndicator");
+        const statusValue = document.getElementById("statusValue");
+
+        if (loss > initialLoss * 10) {
+          // Loss increased by 10x
+          statusIndicator.style.display = "block";
+          statusValue.textContent = "⚠️ Diverging";
+          statusValue.style.color = "#f44336";
+        } else if (loss > initialLoss * 2) {
+          // Loss increased by 2x
+          statusIndicator.style.display = "block";
+          statusValue.textContent = "⚠️ Unstable";
+          statusValue.style.color = "#ff9800";
+        } else if (loss < initialLoss * 0.1) {
+          // Loss decreased by 10x
+          statusIndicator.style.display = "block";
+          statusValue.textContent = "✅ Converging";
+          statusValue.style.color = "#4caf50";
+        } else {
+          statusIndicator.style.display = "none";
+        }
       }
 
       // Single update step
@@ -1024,7 +1102,7 @@
         drawProgress();
 
         // Stop if converged (for neural network) or if oscillating/diverging
-        if (loss < 0.001 || iterationCount > 500) {
+        if (loss < 0.001 || iterationCount > 500 || loss > 10000) {
           pauseAnimation();
         }
       }
