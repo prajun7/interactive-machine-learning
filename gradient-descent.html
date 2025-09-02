@@ -1,4 +1,3 @@
-```html
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -294,40 +293,47 @@
     <div class="container">
       <a href="index.html" class="back-link">← Back to Interactive ML</a>
 
-      <h1>🎯 Gradient Descent: Training a Simple Neural Network</h1>
+      <h1>🎯 Gradient Descent: Ball Rolling Down the Loss Curve</h1>
       <div class="subtitle">
-        Watch how we find the perfect weights to minimize prediction errors
+        Watch the ball find the perfect learning rate to reach the global
+        minimum
       </div>
 
       <div class="scenario-box">
-        <h3>🧠 The Problem: Training a Simple Neural Network</h3>
+        <h3>🧠 The Problem: Finding the Global Minimum</h3>
         <p>
-          <strong>Imagine:</strong> We have a neural network with 2 weights (w₁,
-          w₂) trying to predict a target value of <strong>5</strong>.
+          <strong>Imagine:</strong> A ball rolling down a complex loss function
+          with multiple minima.
         </p>
         <p>
-          <strong>Current Prediction:</strong>
-          <span id="currentPrediction">0.00</span> = w₁ × 2 + w₂ × 1
+          <strong>Current Position:</strong>
+          θ = <span id="currentPrediction">4.00</span>
         </p>
-        <p><strong>Target:</strong> 5.00 (what we want to predict)</p>
         <p>
-          <strong>Error:</strong> <span id="currentError">0.00</span> =
-          |Prediction - Target|
+          <strong>Current Loss:</strong> <span id="currentError">0.00</span>
+        </p>
+        <p>
+          <strong>Goal:</strong> Reach the global minimum (green star ★) without
+          getting stuck in local minima (orange dots)
         </p>
       </div>
 
       <div class="grid">
         <div class="panel">
-          <h2>📈 Loss Landscape (Error Surface)</h2>
+          <h2>📈 1D Loss Function & Learning Rate Effects</h2>
           <canvas id="lossCanvas"></canvas>
           <div class="legend">
             <div class="legend-item">
               <div class="legend-color" style="background: #4caf50"></div>
-              <span>Optimal Weights (w₁=2, w₂=1)</span>
+              <span>Global Minimum</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color" style="background: #ff9800"></div>
+              <span>Local Minimum</span>
             </div>
             <div class="legend-item">
               <div class="legend-color" style="background: #f44336"></div>
-              <span>Current Weights</span>
+              <span>Current Position (Ball)</span>
             </div>
             <div class="legend-item">
               <div
@@ -379,19 +385,19 @@
             <div class="value-display" id="learningRateValue">0.10</div>
           </div>
           <div class="control-group">
-            <label for="startX">Initial Weight 1 (w₁)</label>
+            <label for="startX">Initial θ (1D Parameter)</label>
             <input
               type="range"
               id="startX"
-              min="-2"
-              max="6"
+              min="-1"
+              max="5"
               step="0.1"
-              value="0"
+              value="4"
             />
-            <div class="value-display" id="startXValue">0.0</div>
+            <div class="value-display" id="startXValue">4.0</div>
           </div>
           <div class="control-group">
-            <label for="startY">Initial Weight 2 (w₂)</label>
+            <label for="startY">Neural Net Weight 2 (w₂)</label>
             <input
               type="range"
               id="startY"
@@ -425,79 +431,95 @@
       </div>
 
       <div class="info-box">
-        <h3>🎓 Understanding the Math</h3>
+        <h3>🎓 Understanding Learning Rate Effects</h3>
 
         <div class="formula-box">
-          <h4>1️⃣ Neural Network Prediction:</h4>
-          <div class="formula">Prediction = w₁ × input₁ + w₂ × input₂</div>
-          <div class="formula">Prediction = w₁ × 2 + w₂ × 1</div>
+          <h4>🎯 The 1D Loss Function:</h4>
+          <div class="formula">L(θ) = 0.1θ⁴ - 0.6θ³ + θ² + 0.2θ + 0.5</div>
+          <div class="formula">Gradient: ∇L(θ) = 0.4θ³ - 1.8θ² + 2θ + 0.2</div>
           <p style="margin-top: 10px; color: #666">
-            We have fixed inputs (2, 1) and want to find weights that predict
-            target value 5.
+            This function has multiple minima: a local minimum around θ ≈ 0.15
+            and a global minimum around θ ≈ 3.0
           </p>
-        </div>
-
-        <div class="formula-box">
-          <h4>2️⃣ Loss Function (Mean Squared Error):</h4>
-          <div class="formula">Loss = ½(Prediction - Target)²</div>
-          <div class="formula">Loss = ½(w₁×2 + w₂×1 - 5)²</div>
-          <p style="margin-top: 10px; color: #666">
-            This measures how wrong our prediction is. Lower loss = better
-            prediction!
-          </p>
-        </div>
-
-        <div class="formula-box">
-          <h4>3️⃣ Finding the Optimal Weights:</h4>
-          <div class="formula">
-            If w₁×2 + w₂×1 = 5, then Loss = 0 (perfect!)
-          </div>
-          <div class="formula">
-            One solution: w₁ = 2, w₂ = 3 → 2×2 + 3×1 = 7... wait! 🤔
-          </div>
-          <div class="formula">
-            Correct solution: w₁ = 2, w₂ = 1 → 2×2 + 1×1 = 5 ✓
-          </div>
-        </div>
-
-        <div class="formula-box">
-          <h4>4️⃣ Gradient Descent Updates:</h4>
-          <div class="formula">
-            ∂Loss/∂w₁ = (Prediction - Target) × input₁ = (Prediction - 5) × 2
-          </div>
-          <div class="formula">
-            ∂Loss/∂w₂ = (Prediction - Target) × input₂ = (Prediction - 5) × 1
-          </div>
-          <div class="formula">w₁ₙₑw = w₁ₒₗd - α × ∂Loss/∂w₁</div>
-          <div class="formula">w₂ₙₑw = w₂ₒₗd - α × ∂Loss/∂w₂</div>
         </div>
 
         <div class="success-box">
-          <h4>🎯 The Goal</h4>
-          <p><strong>Perfect weights:</strong> w₁ = 2.0, w₂ = 1.0</p>
+          <h4>✅ Perfect Learning Rate (0.1 - 0.3)</h4>
           <p>
-            <strong>Perfect prediction:</strong> 2×2 + 1×1 = 5 (exactly our
-            target!)
+            <strong>Behavior:</strong> Smooth, steady descent toward the nearest
+            minimum
           </p>
-          <p><strong>Perfect loss:</strong> 0.000 (no error)</p>
           <p>
-            The red dot should reach the green dot as training progresses! 🎉
+            <strong>Result:</strong> Reliable convergence without overshooting
           </p>
+          <p><strong>Best for:</strong> Most practical applications</p>
         </div>
 
         <div class="warning-box">
-          <h4>⚠️ Learning Rate Tips</h4>
+          <h4>🐌 Too Low Learning Rate (< 0.05)</h4>
           <p>
-            <strong>Too high (>0.5):</strong> Might overshoot and oscillate
-            around the minimum
+            <strong>Behavior:</strong> Very small steps, extremely slow progress
           </p>
           <p>
-            <strong>Too low (<0.05):</strong> Very slow learning, takes many
-            steps
+            <strong>Problem:</strong> May get stuck in local minima, takes
+            forever to converge
           </p>
           <p>
-            <strong>Just right (0.1-0.3):</strong> Smooth, efficient convergence
-            to the green dot
+            <strong>Risk:</strong> Training might not finish in reasonable time
+          </p>
+        </div>
+
+        <div
+          style="
+            background: linear-gradient(135deg, #ffebee, #ffcdd2);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid #f44336;
+          "
+        >
+          <h4>⚠️ Too High Learning Rate (> 0.5)</h4>
+          <p>
+            <strong>Behavior:</strong> Large jumps that overshoot the minimum
+          </p>
+          <p>
+            <strong>Problem:</strong> Oscillates around minimum, might diverge
+            completely
+          </p>
+          <p>
+            <strong>Risk:</strong> Can jump out of good minima and never
+            converge
+          </p>
+        </div>
+
+        <div class="scenario-box">
+          <h3>🧪 Experiment with Different Starting Points</h3>
+          <p>
+            <strong>Start at θ = 4:</strong> Should roll down to global minimum
+            (θ ≈ 3)
+          </p>
+          <p>
+            <strong>Start at θ = -1:</strong> Might get trapped in local minimum
+            (θ ≈ 0.15)
+          </p>
+          <p>
+            <strong>Start at θ = 1:</strong> Could go either direction depending
+            on learning rate!
+          </p>
+          <p>
+            <strong>High LR Risk:</strong> Might overshoot and bounce between
+            minima
+          </p>
+        </div>
+
+        <div class="formula-box">
+          <h4>🔄 Gradient Descent Update Rule:</h4>
+          <div class="formula">θ_new = θ_old - α × ∇L(θ_old)</div>
+          <div class="formula">
+            θ_new = θ_old - α × (0.4θ³ - 1.8θ² + 2θ + 0.2)
+          </div>
+          <p style="margin-top: 10px; color: #666">
+            The ball rolls in the direction opposite to the gradient (downhill)
           </p>
         </div>
       </div>
@@ -514,10 +536,12 @@
       // Global variables
       let interval = null;
       let isRunning = false;
-      let currentX, currentY; // w1, w2
+      let currentX, currentY; // w1, w2 (for neural network)
+      let currentTheta = 0; // parameter for 1D visualization
       let path = [];
       let lossHistory = [];
       let iterationCount = 0;
+      let path1D = []; // for 1D visualization path
 
       // Get DOM elements
       const lossCanvas = document.getElementById("lossCanvas");
@@ -574,143 +598,152 @@
         };
       }
 
-      // Map coordinates to canvas (assuming canvas.width and height are set)
-      function mapToCanvas(w1, w2, canvas) {
+      // 1D Loss function with local and global minima
+      function loss1D(theta) {
+        // Complex function with multiple minima
+        // f(x) = 0.1*x^4 - 0.6*x^3 + x^2 + 0.2*x + 0.5
+        return (
+          0.1 * Math.pow(theta, 4) -
+          0.6 * Math.pow(theta, 3) +
+          Math.pow(theta, 2) +
+          0.2 * theta +
+          0.5
+        );
+      }
+
+      // Derivative of 1D loss function
+      function gradient1D(theta) {
+        // f'(x) = 0.4*x^3 - 1.8*x^2 + 2*x + 0.2
+        return (
+          0.4 * Math.pow(theta, 3) - 1.8 * Math.pow(theta, 2) + 2 * theta + 0.2
+        );
+      }
+
+      // Map 1D coordinates to canvas
+      function mapToCanvas1D(theta, loss, canvas) {
         const padding = 50;
-        const rangeW1 = 8; // -2 to 6
-        const rangeW2 = 8; // -2 to 6
-        const scaleX =
-          (canvas.width / window.devicePixelRatio - 2 * padding) / rangeW1;
-        const scaleY =
-          (canvas.height / window.devicePixelRatio - 2 * padding) / rangeW2;
-        return {
-          x: padding + (w1 + 2) * scaleX,
-          y:
-            canvas.height / window.devicePixelRatio -
-            padding -
-            (w2 + 2) * scaleY,
-        };
+        const canvasWidth = canvas.width / window.devicePixelRatio;
+        const canvasHeight = canvas.height / window.devicePixelRatio;
+
+        const thetaRange = 8; // -2 to 6
+        const lossRange = 6; // 0 to 6
+
+        const x =
+          padding + ((theta + 2) / thetaRange) * (canvasWidth - 2 * padding);
+        const y =
+          canvasHeight -
+          padding -
+          (loss / lossRange) * (canvasHeight - 2 * padding);
+
+        return { x, y };
       }
 
-      // Helper to draw a contour line for 2*w1 + w2 = b
-      function drawContourLine(ctx, b) {
-        let points = [];
-
-        // Left boundary w1 = -2
-        let w2 = b - 2 * -2;
-        if (w2 >= -2 && w2 <= 6) points.push({ w1: -2, w2 });
-
-        // Right boundary w1 = 6
-        w2 = b - 2 * 6;
-        if (w2 >= -2 && w2 <= 6) points.push({ w1: 6, w2 });
-
-        // Bottom boundary w2 = -2
-        let w1 = (b - -2) / 2;
-        if (w1 >= -2 && w1 <= 6) points.push({ w1, w2: -2 });
-
-        // Top boundary w2 = 6
-        w1 = (b - 6) / 2;
-        if (w1 >= -2 && w1 <= 6) points.push({ w1, w2: 6 });
-
-        if (points.length >= 2) {
-          const p1 = mapToCanvas(points[0].w1, points[0].w2, lossCanvas);
-          const p2 = mapToCanvas(points[1].w1, points[1].w2, lossCanvas);
-          ctx.beginPath();
-          ctx.moveTo(p1.x, p1.y);
-          ctx.lineTo(p2.x, p2.y);
-          ctx.stroke();
-        }
-      }
-
-      // Draw loss surface
+      // Draw 1D loss function with ball rolling visualization
       function drawLossSurface() {
         const canvasWidth = lossCanvas.width / window.devicePixelRatio;
         const canvasHeight = lossCanvas.height / window.devicePixelRatio;
         lossCtx.clearRect(0, 0, canvasWidth, canvasHeight);
 
-        // Draw contours as parallel lines
-        const contourLevels = [0.5, 2, 8, 18, 32, 50, 72, 98];
-        contourLevels.forEach((level, i) => {
-          const opacity = 0.15 + i * 0.08;
-          lossCtx.strokeStyle = `rgba(102, 126, 234, ${opacity})`;
-          lossCtx.lineWidth = 1;
-          const c = Math.sqrt(2 * level);
-          drawContourLine(lossCtx, 5 + c);
-          drawContourLine(lossCtx, 5 - c);
-        });
+        const padding = 50;
 
-        // Draw the minimum line (loss=0)
-        lossCtx.strokeStyle = "rgba(76, 175, 80, 0.5)";
+        // Draw axes
+        lossCtx.strokeStyle = "#dee2e6";
         lossCtx.lineWidth = 2;
-        drawContourLine(lossCtx, 5);
+        lossCtx.beginPath();
+        lossCtx.moveTo(padding, canvasHeight - padding);
+        lossCtx.lineTo(canvasWidth - padding, canvasHeight - padding);
+        lossCtx.moveTo(padding, padding);
+        lossCtx.lineTo(padding, canvasHeight - padding);
+        lossCtx.stroke();
 
         // Draw grid
-        lossCtx.strokeStyle = "#e9ecef";
+        lossCtx.strokeStyle = "#f1f3f4";
         lossCtx.lineWidth = 1;
 
-        // Vertical lines (w1)
-        for (let w1 = -2; w1 <= 6; w1 += 1) {
-          const startPoint = mapToCanvas(w1, -2, lossCanvas);
-          const endPoint = mapToCanvas(w1, 6, lossCanvas);
+        // Vertical grid lines
+        for (let theta = -2; theta <= 6; theta += 1) {
+          const x = padding + ((theta + 2) / 8) * (canvasWidth - 2 * padding);
           lossCtx.beginPath();
-          lossCtx.moveTo(startPoint.x, startPoint.y);
-          lossCtx.lineTo(endPoint.x, endPoint.y);
+          lossCtx.moveTo(x, padding);
+          lossCtx.lineTo(x, canvasHeight - padding);
           lossCtx.stroke();
         }
 
-        // Horizontal lines (w2)
-        for (let w2 = -2; w2 <= 6; w2 += 1) {
-          const startPoint = mapToCanvas(-2, w2, lossCanvas);
-          const endPoint = mapToCanvas(6, w2, lossCanvas);
+        // Horizontal grid lines
+        for (let loss = 0; loss <= 6; loss += 1) {
+          const y =
+            canvasHeight - padding - (loss / 6) * (canvasHeight - 2 * padding);
           lossCtx.beginPath();
-          lossCtx.moveTo(startPoint.x, startPoint.y);
-          lossCtx.lineTo(endPoint.x, endPoint.y);
+          lossCtx.moveTo(padding, y);
+          lossCtx.lineTo(canvasWidth - padding, y);
           lossCtx.stroke();
         }
 
-        // Draw axis labels and numbers
-        lossCtx.fillStyle = "#6c757d";
-        lossCtx.font = "12px Arial";
-        lossCtx.textAlign = "center";
+        // Draw the loss function curve
+        lossCtx.strokeStyle = "#667eea";
+        lossCtx.lineWidth = 3;
+        lossCtx.beginPath();
 
-        // W1 axis (bottom)
-        for (let w1 = -2; w1 <= 6; w1 += 1) {
-          const point = mapToCanvas(w1, -2, lossCanvas);
-          lossCtx.fillText(w1.toString(), point.x, point.y + 20);
+        let firstPoint = true;
+        for (let theta = -2; theta <= 6; theta += 0.05) {
+          const loss = loss1D(theta);
+          if (loss <= 6) {
+            // Only draw if within range
+            const point = mapToCanvas1D(theta, loss, lossCanvas);
+            if (firstPoint) {
+              lossCtx.moveTo(point.x, point.y);
+              firstPoint = false;
+            } else {
+              lossCtx.lineTo(point.x, point.y);
+            }
+          }
         }
-        lossCtx.fillText("w₁ (Weight 1)", canvasWidth / 2, canvasHeight - 15);
+        lossCtx.stroke();
 
-        // W2 axis (left)
-        lossCtx.textAlign = "right";
-        for (let w2 = -2; w2 <= 6; w2 += 1) {
-          const point = mapToCanvas(-2, w2, lossCanvas);
-          lossCtx.fillText(w2.toString(), point.x - 10, point.y + 4);
-        }
-        lossCtx.save();
-        lossCtx.translate(20, canvasHeight / 2);
-        lossCtx.rotate(-Math.PI / 2);
-        lossCtx.textAlign = "center";
-        lossCtx.fillText("w₂ (Weight 2)", 0, 0);
-        lossCtx.restore();
+        // Find and mark critical points (approximate)
+        const globalMin = { theta: 3, loss: loss1D(3) }; // Global minimum around theta=3
+        const localMin = { theta: 0.15, loss: loss1D(0.15) }; // Local minimum around theta=0.15
+        const localMax = { theta: 1.5, loss: loss1D(1.5) }; // Local maximum around theta=1.5
 
-        // Draw optimal point (green) - one example on the minimum line
-        const optimalPoint = mapToCanvas(OPTIMAL_W1, OPTIMAL_W2, lossCanvas);
+        // Draw global minimum
+        const globalPoint = mapToCanvas1D(
+          globalMin.theta,
+          globalMin.loss,
+          lossCanvas
+        );
         lossCtx.fillStyle = "#4CAF50";
         lossCtx.beginPath();
-        lossCtx.arc(optimalPoint.x, optimalPoint.y, 10, 0, 2 * Math.PI);
+        lossCtx.arc(globalPoint.x, globalPoint.y, 8, 0, 2 * Math.PI);
         lossCtx.fill();
         lossCtx.fillStyle = "white";
-        lossCtx.font = "bold 12px Arial";
+        lossCtx.font = "bold 10px Arial";
         lossCtx.textAlign = "center";
-        lossCtx.fillText("★", optimalPoint.x, optimalPoint.y + 4);
+        lossCtx.fillText("★", globalPoint.x, globalPoint.y + 3);
+
+        // Draw local minimum
+        const localPoint = mapToCanvas1D(
+          localMin.theta,
+          localMin.loss,
+          lossCanvas
+        );
+        lossCtx.fillStyle = "#ff9800";
+        lossCtx.beginPath();
+        lossCtx.arc(localPoint.x, localPoint.y, 8, 0, 2 * Math.PI);
+        lossCtx.fill();
+        lossCtx.fillStyle = "white";
+        lossCtx.fillText("⚬", localPoint.x, localPoint.y + 3);
 
         // Draw path
-        if (path.length > 1) {
-          lossCtx.strokeStyle = "rgba(255, 165, 0, 0.8)";
-          lossCtx.lineWidth = 3;
+        if (path1D.length > 1) {
+          lossCtx.strokeStyle = "rgba(255, 165, 0, 0.7)";
+          lossCtx.lineWidth = 2;
           lossCtx.beginPath();
-          path.forEach((point, i) => {
-            const canvasPoint = mapToCanvas(point.w1, point.w2, lossCanvas);
+          path1D.forEach((point, i) => {
+            const canvasPoint = mapToCanvas1D(
+              point.theta,
+              point.loss,
+              lossCanvas
+            );
             if (i === 0) {
               lossCtx.moveTo(canvasPoint.x, canvasPoint.y);
             } else {
@@ -720,62 +753,146 @@
           lossCtx.stroke();
 
           // Draw path points
-          path.forEach((point, i) => {
-            if (i > 0 && i < path.length - 1) {
-              const canvasPoint = mapToCanvas(point.w1, point.w2, lossCanvas);
+          path1D.forEach((point, i) => {
+            if (i > 0 && i < path1D.length - 1 && i % 3 === 0) {
+              const canvasPoint = mapToCanvas1D(
+                point.theta,
+                point.loss,
+                lossCanvas
+              );
               lossCtx.fillStyle = "rgba(255, 165, 0, 0.6)";
               lossCtx.beginPath();
-              lossCtx.arc(canvasPoint.x, canvasPoint.y, 4, 0, 2 * Math.PI);
+              lossCtx.arc(canvasPoint.x, canvasPoint.y, 3, 0, 2 * Math.PI);
               lossCtx.fill();
             }
           });
         }
 
-        // Draw current point (red)
-        const currentPoint = mapToCanvas(currentX, currentY, lossCanvas);
-        lossCtx.fillStyle = "#f44336";
-        lossCtx.beginPath();
-        lossCtx.arc(currentPoint.x, currentPoint.y, 10, 0, 2 * Math.PI);
-        lossCtx.fill();
+        // Draw current ball position
+        if (currentTheta >= -2 && currentTheta <= 6) {
+          const currentLoss = loss1D(currentTheta);
+          if (currentLoss <= 6) {
+            const currentPoint = mapToCanvas1D(
+              currentTheta,
+              currentLoss,
+              lossCanvas
+            );
 
-        // Draw descent arrow (-gradient direction)
-        const grad = gradient(currentX, currentY);
-        const gradMagnitude = Math.sqrt(
-          grad.dw1 * grad.dw1 + grad.dw2 * grad.dw2
-        );
-        if (gradMagnitude > 0.001) {
-          const arrowScale = 30;
-          const arrowEndX =
-            currentPoint.x - (grad.dw1 / gradMagnitude) * arrowScale;
-          const arrowEndY =
-            currentPoint.y + (grad.dw2 / gradMagnitude) * arrowScale; // Note: y inverted for w2
+            // Draw ball shadow
+            lossCtx.fillStyle = "rgba(0, 0, 0, 0.2)";
+            lossCtx.beginPath();
+            lossCtx.ellipse(
+              currentPoint.x + 2,
+              currentPoint.y + 15,
+              8,
+              3,
+              0,
+              0,
+              2 * Math.PI
+            );
+            lossCtx.fill();
 
-          lossCtx.strokeStyle = "#f44336";
-          lossCtx.lineWidth = 3;
-          lossCtx.beginPath();
-          lossCtx.moveTo(currentPoint.x, currentPoint.y);
-          lossCtx.lineTo(arrowEndX, arrowEndY);
-          lossCtx.stroke();
+            // Draw ball
+            const gradient = lossCtx.createRadialGradient(
+              currentPoint.x - 3,
+              currentPoint.y - 3,
+              0,
+              currentPoint.x,
+              currentPoint.y,
+              10
+            );
+            gradient.addColorStop(0, "#ff6b6b");
+            gradient.addColorStop(1, "#d32f2f");
 
-          // Arrowhead
-          const angle = Math.atan2(
-            arrowEndY - currentPoint.y,
-            arrowEndX - currentPoint.x
-          );
-          lossCtx.beginPath();
-          lossCtx.moveTo(arrowEndX, arrowEndY);
-          lossCtx.lineTo(
-            arrowEndX - 10 * Math.cos(angle - Math.PI / 6),
-            arrowEndY - 10 * Math.sin(angle - Math.PI / 6)
-          );
-          lossCtx.lineTo(
-            arrowEndX - 10 * Math.cos(angle + Math.PI / 6),
-            arrowEndY - 10 * Math.sin(angle + Math.PI / 6)
-          );
-          lossCtx.closePath();
-          lossCtx.fillStyle = "#f44336";
-          lossCtx.fill();
+            lossCtx.fillStyle = gradient;
+            lossCtx.beginPath();
+            lossCtx.arc(currentPoint.x, currentPoint.y, 10, 0, 2 * Math.PI);
+            lossCtx.fill();
+
+            // Ball highlight
+            lossCtx.fillStyle = "rgba(255, 255, 255, 0.6)";
+            lossCtx.beginPath();
+            lossCtx.arc(
+              currentPoint.x - 3,
+              currentPoint.y - 3,
+              3,
+              0,
+              2 * Math.PI
+            );
+            lossCtx.fill();
+
+            // Draw gradient arrow
+            const grad = gradient1D(currentTheta);
+            if (Math.abs(grad) > 0.01) {
+              const arrowScale = Math.min(50, Math.abs(grad) * 20);
+              const arrowEndX = currentPoint.x - Math.sign(grad) * arrowScale;
+              const arrowEndY = currentPoint.y;
+
+              lossCtx.strokeStyle = "#e91e63";
+              lossCtx.lineWidth = 3;
+              lossCtx.beginPath();
+              lossCtx.moveTo(currentPoint.x, currentPoint.y - 15);
+              lossCtx.lineTo(arrowEndX, arrowEndY - 15);
+              lossCtx.stroke();
+
+              // Arrowhead
+              lossCtx.fillStyle = "#e91e63";
+              lossCtx.beginPath();
+              lossCtx.moveTo(arrowEndX, arrowEndY - 15);
+              lossCtx.lineTo(arrowEndX + Math.sign(grad) * 8, arrowEndY - 20);
+              lossCtx.lineTo(arrowEndX + Math.sign(grad) * 8, arrowEndY - 10);
+              lossCtx.closePath();
+              lossCtx.fill();
+            }
+          }
         }
+
+        // Draw axis labels
+        lossCtx.fillStyle = "#6c757d";
+        lossCtx.font = "12px Arial";
+        lossCtx.textAlign = "center";
+
+        // X-axis labels
+        for (let theta = -2; theta <= 6; theta += 2) {
+          const x = padding + ((theta + 2) / 8) * (canvasWidth - 2 * padding);
+          lossCtx.fillText(theta.toString(), x, canvasHeight - padding + 20);
+        }
+        lossCtx.fillText("θ (Parameter)", canvasWidth / 2, canvasHeight - 15);
+
+        // Y-axis labels
+        lossCtx.textAlign = "right";
+        for (let loss = 0; loss <= 6; loss += 2) {
+          const y =
+            canvasHeight - padding - (loss / 6) * (canvasHeight - 2 * padding);
+          lossCtx.fillText(loss.toString(), padding - 10, y + 4);
+        }
+        lossCtx.save();
+        lossCtx.translate(20, canvasHeight / 2);
+        lossCtx.rotate(-Math.PI / 2);
+        lossCtx.textAlign = "center";
+        lossCtx.fillText("Loss", 0, 0);
+        lossCtx.restore();
+
+        // Add learning rate effect annotations
+        const learningRate = parseFloat(learningRateSlider.value);
+        let rateText = "";
+        let rateColor = "#333";
+
+        if (learningRate > 0.5) {
+          rateText = "⚠️ High LR: Risk of overshooting!";
+          rateColor = "#f44336";
+        } else if (learningRate < 0.05) {
+          rateText = "🐌 Low LR: Very slow convergence";
+          rateColor = "#ff9800";
+        } else {
+          rateText = "✅ Good LR: Steady progress";
+          rateColor = "#4caf50";
+        }
+
+        lossCtx.fillStyle = rateColor;
+        lossCtx.font = "bold 14px Arial";
+        lossCtx.textAlign = "center";
+        lossCtx.fillText(rateText, canvasWidth / 2, 30);
       }
 
       // Draw progress chart
@@ -864,9 +981,10 @@
         const prediction = predict(currentX, currentY);
         const loss = lossFunction(currentX, currentY);
         const error = Math.abs(prediction - TARGET);
+        const loss1DVal = loss1D(currentTheta);
 
-        currentPredictionEl.textContent = prediction.toFixed(2);
-        currentErrorEl.textContent = error.toFixed(2);
+        currentPredictionEl.textContent = currentTheta.toFixed(2);
+        currentErrorEl.textContent = loss1DVal.toFixed(3);
         currentLossEl.textContent = loss.toFixed(3);
         iterationEl.textContent = iterationCount;
 
@@ -880,13 +998,24 @@
       // Single update step
       function update() {
         const lr = parseFloat(learningRateSlider.value);
-        const grad = gradient(currentX, currentY);
 
+        // Update neural network weights
+        const grad = gradient(currentX, currentY);
         currentX -= lr * grad.dw1;
         currentY -= lr * grad.dw2;
 
+        // Update 1D parameter
+        const grad1D = gradient1D(currentTheta);
+        currentTheta -= lr * grad1D;
+
+        // Keep theta in reasonable bounds for visualization
+        currentTheta = Math.max(-2, Math.min(6, currentTheta));
+
         const loss = lossFunction(currentX, currentY);
+        const loss1DVal = loss1D(currentTheta);
+
         path.push({ w1: currentX, w2: currentY });
+        path1D.push({ theta: currentTheta, loss: loss1DVal });
         lossHistory.push(loss);
         iterationCount++;
 
@@ -894,7 +1023,8 @@
         drawLossSurface();
         drawProgress();
 
-        if (loss < 0.001) {
+        // Stop if converged (for neural network) or if oscillating/diverging
+        if (loss < 0.001 || iterationCount > 500) {
           pauseAnimation();
         }
       }
@@ -924,7 +1054,13 @@
         pauseAnimation();
         currentX = parseFloat(startXSlider.value);
         currentY = parseFloat(startYSlider.value);
+
+        // Set 1D parameter based on a simple mapping from 2D space
+        // Map from 2D neural network space to 1D parameter space for visualization
+        currentTheta = parseFloat(startXSlider.value);
+
         path = [{ w1: currentX, w2: currentY }];
+        path1D = [{ theta: currentTheta, loss: loss1D(currentTheta) }];
         lossHistory = [lossFunction(currentX, currentY)];
         iterationCount = 0;
         updateStats();
@@ -947,7 +1083,10 @@
           document.getElementById("startXValue").textContent = parseFloat(
             startXSlider.value
           ).toFixed(1);
-          if (!isRunning) reset();
+          if (!isRunning) {
+            currentTheta = parseFloat(startXSlider.value);
+            reset();
+          }
         });
 
         startYSlider.addEventListener("input", () => {
@@ -984,4 +1123,3 @@
     </script>
   </body>
 </html>
-```
