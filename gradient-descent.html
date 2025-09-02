@@ -313,7 +313,7 @@
         </p>
         <p>
           <strong>Current Position:</strong>
-          θ = <span id="currentPrediction">4.00</span>
+          θ = <span id="currentPrediction">4.50</span>
         </p>
         <p>
           <strong>Current Loss:</strong> <span id="currentError">0.00</span>
@@ -402,9 +402,9 @@
               min="-1"
               max="5"
               step="0.1"
-              value="4"
+              value="4.5"
             />
-            <div class="value-display" id="startXValue">4.0</div>
+            <div class="value-display" id="startXValue">4.5</div>
           </div>
           <div class="control-group">
             <label for="startY">Neural Net Weight 2 (w₂)</label>
@@ -445,11 +445,12 @@
 
         <div class="formula-box">
           <h4>🎯 The 1D Loss Function:</h4>
-          <div class="formula">L(θ) = 0.1θ⁴ - 0.6θ³ + θ² + 0.2θ + 0.5</div>
-          <div class="formula">Gradient: ∇L(θ) = 0.4θ³ - 1.8θ² + 2θ + 0.2</div>
+          <div class="formula">L(θ) = { 0.8(θ-0.5)² + 1.2 if θ < 1.75 }</div>
+          <div class="formula">{ 0.3(θ-3)² + 0.5 if θ ≥ 1.75 }</div>
           <p style="margin-top: 10px; color: #666">
-            This function has multiple minima: a local minimum around θ ≈ 0.15
-            and a global minimum around θ ≈ 3.0
+            This piecewise function creates clear minima:
+            <strong>Global minimum</strong> at θ=3 (loss=0.5) and
+            <strong>Local minimum</strong> at θ=0.5 (loss=1.2)
           </p>
         </div>
 
@@ -505,31 +506,33 @@
         <div class="scenario-box">
           <h3>🧪 Experiment with Different Starting Points</h3>
           <p>
-            <strong>Start at θ = 4:</strong> Should roll down to global minimum
-            (θ ≈ 3)
+            <strong>Start at θ = 4:</strong> Should roll down to the global
+            minimum at θ=3 (green star ★, loss=0.5) - the lowest point
           </p>
           <p>
-            <strong>Start at θ = -1:</strong> Might get trapped in local minimum
-            (θ ≈ 0.15)
+            <strong>Start at θ = -1:</strong> Might get trapped in the local
+            minimum at θ=0.5 (orange dot ⚬, loss=1.2) - higher than global
+            minimum
           </p>
           <p>
-            <strong>Start at θ = 1:</strong> Could go either direction depending
-            on learning rate!
+            <strong>Start at θ = 1.75:</strong> Critical transition point! Could
+            go either direction depending on learning rate and numerical
+            precision
           </p>
           <p>
             <strong>High LR Risk:</strong> Might overshoot and bounce between
-            minima
+            minima or diverge completely
           </p>
         </div>
 
         <div class="formula-box">
           <h4>🔄 Gradient Descent Update Rule:</h4>
           <div class="formula">θ_new = θ_old - α × ∇L(θ_old)</div>
-          <div class="formula">
-            θ_new = θ_old - α × (0.4θ³ - 1.8θ² + 2θ + 0.2)
-          </div>
+          <div class="formula">∇L(θ) = { 1.6(θ-0.5) if θ < 1.75 }</div>
+          <div class="formula">{ 0.6(θ-3) if θ ≥ 1.75 }</div>
           <p style="margin-top: 10px; color: #666">
-            The ball rolls in the direction opposite to the gradient (downhill)
+            The ball rolls in the direction opposite to the gradient (downhill).
+            Note: The gradient changes slope at θ=1.75 (transition point).
           </p>
         </div>
 
@@ -626,25 +629,28 @@
         };
       }
 
-      // 1D Loss function with local and global minima
+      // 1D Loss function with clear local and global minima
       function loss1D(theta) {
-        // Complex function with multiple minima
-        // f(x) = 0.1*x^4 - 0.6*x^3 + x^2 + 0.2*x + 0.5
-        return (
-          0.1 * Math.pow(theta, 4) -
-          0.6 * Math.pow(theta, 3) +
-          Math.pow(theta, 2) +
-          0.2 * theta +
-          0.5
-        );
+        // Piecewise function that creates clear minima:
+        // Global minimum at theta=3, Local minimum at theta=0.5
+        if (theta < 1.75) {
+          // Left side: parabola with minimum at theta=0.5
+          return 0.8 * Math.pow(theta - 0.5, 2) + 1.2;
+        } else {
+          // Right side: parabola with minimum at theta=3
+          return 0.3 * Math.pow(theta - 3, 2) + 0.5;
+        }
       }
 
       // Derivative of 1D loss function
       function gradient1D(theta) {
-        // f'(x) = 0.4*x^3 - 1.8*x^2 + 2*x + 0.2
-        return (
-          0.4 * Math.pow(theta, 3) - 1.8 * Math.pow(theta, 2) + 2 * theta + 0.2
-        );
+        if (theta < 1.75) {
+          // Left side derivative: 1.6*(theta - 0.5)
+          return 1.6 * (theta - 0.5);
+        } else {
+          // Right side derivative: 0.6*(theta - 3)
+          return 0.6 * (theta - 3);
+        }
       }
 
       // Map 1D coordinates to canvas
@@ -728,10 +734,9 @@
         }
         lossCtx.stroke();
 
-        // Find and mark critical points (approximate)
-        const globalMin = { theta: 3, loss: loss1D(3) }; // Global minimum around theta=3
-        const localMin = { theta: 0.15, loss: loss1D(0.15) }; // Local minimum around theta=0.15
-        const localMax = { theta: 1.5, loss: loss1D(1.5) }; // Local maximum around theta=1.5
+        // Define the known minima for our piecewise function
+        const globalMin = { theta: 3.0, loss: 0.5 }; // Global minimum (lowest)
+        const localMin = { theta: 0.5, loss: 1.2 }; // Local minimum (higher)
 
         // Draw global minimum
         const globalPoint = mapToCanvas1D(
