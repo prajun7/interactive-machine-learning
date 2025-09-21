@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Linear Regression Visualization</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        padding: 20px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 15px;
+        padding: 30px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      }
+
+      h1 {
+        text-align: center;
+        color: #333;
+        margin-bottom: 30px;
+        background: linear-gradient(45deg, #667eea, #764ba2);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-size: 2.2em;
+      }
+
+      .controls-section {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+        margin-bottom: 30px;
+      }
+
+      .controls-panel {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 10px;
+        border-left: 4px solid #667eea;
+      }
+
+      .equation-panel {
+        background: #e8f5e8;
+        padding: 20px;
+        border-radius: 10px;
+        border-left: 4px solid #28a745;
+      }
+
+      .slider-container {
+        margin: 15px 0;
+      }
+
+      .slider-container label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: #333;
+      }
+
+      input[type="range"] {
+        width: 100%;
+        height: 6px;
+        border-radius: 3px;
+        background: #ddd;
+        outline: none;
+        -webkit-appearance: none;
+        margin: 10px 0;
+      }
+
+      input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: linear-gradient(45deg, #667eea, #764ba2);
+        cursor: pointer;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+      }
+
+      .equation-display {
+        background: white;
+        padding: 15px;
+        border-radius: 8px;
+        font-family: "Courier New", monospace;
+        font-size: 1.2em;
+        text-align: center;
+        margin: 15px 0;
+        border: 2px solid #28a745;
+      }
+
+      .chart-container {
+        position: relative;
+        height: 500px;
+        margin: 30px 0;
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 15px;
+      }
+
+      .explanation {
+        background: #fff3cd;
+        padding: 20px;
+        border-radius: 10px;
+        border-left: 4px solid #ffc107;
+        margin-top: 20px;
+      }
+
+      .data-point {
+        background: #d1ecf1;
+        padding: 10px;
+        margin: 5px 0;
+        border-radius: 5px;
+        border-left: 3px solid #17a2b8;
+        font-family: "Courier New", monospace;
+      }
+
+      .calculation-steps {
+        margin-top: 20px;
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        border-left: 4px solid #28a745;
+      }
+
+      .calculation-steps h4 {
+        margin: 0 0 15px 0;
+        color: #28a745;
+        font-size: 1.1em;
+      }
+
+      .step-calculation {
+        background: white;
+        padding: 12px;
+        margin: 10px 0;
+        border-radius: 6px;
+        border-left: 3px solid #17a2b8;
+        font-family: "Courier New", monospace;
+        font-size: 0.95em;
+        line-height: 1.6;
+      }
+
+      .step-calculation.final-result {
+        background: #d4edda;
+        border-left-color: #28a745;
+        font-weight: bold;
+        font-size: 1.1em;
+      }
+
+      .vector-explanation {
+        margin-top: 20px;
+        padding: 15px;
+        background: #f0f8ff;
+        border-radius: 8px;
+        border-left: 4px solid #007bff;
+      }
+
+      .vector-explanation h5 {
+        margin: 0 0 15px 0;
+        color: #007bff;
+        font-size: 1.1em;
+      }
+
+      .vector-step {
+        background: white;
+        padding: 12px;
+        margin: 10px 0;
+        border-radius: 6px;
+        border-left: 3px solid #007bff;
+        font-family: "Courier New", monospace;
+        font-size: 0.9em;
+        line-height: 1.6;
+      }
+
+      .vector-step.key-insight {
+        background: #fff3cd;
+        border-left-color: #ffc107;
+        font-weight: bold;
+      }
+
+      @media (max-width: 768px) {
+        .controls-section {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      /* Back button styling */
+      .back-link {
+        text-decoration: none;
+        color: #667eea;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 20px;
+      }
+
+      .back-link:hover {
+        color: #5a67d8;
+        text-decoration: underline;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <a href="index.html" class="back-link">← Back to Interactive ML</a>
+
+      <h1>Linear Regression: Finding the Best Line</h1>
+
+      <div class="chart-container">
+        <canvas id="linearChart"></canvas>
+      </div>
+
+      <div class="controls-section">
+        <div class="controls-panel">
+          <h3>Adjust Line Parameters</h3>
+
+          <div class="slider-container">
+            <label
+              >Bias (w₀) - Y-Intercept: <span id="biasValue">50</span></label
+            >
+            <input
+              type="range"
+              id="biasSlider"
+              min="-100"
+              max="200"
+              value="50"
+              step="10"
+            />
+          </div>
+
+          <div class="slider-container">
+            <label
+              >Weight (w₁) - Slope: <span id="weightValue">0.15</span></label
+            >
+            <input
+              type="range"
+              id="weightSlider"
+              min="0"
+              max="0.5"
+              value="0.15"
+              step="0.01"
+            />
+          </div>
+
+          <div class="data-point">
+            <strong>Example Prediction:</strong><br />
+            House Size: 1500 sq ft<br />
+            Predicted Price: $<span id="examplePrediction">275,000</span>
+          </div>
+
+          <div class="calculation-steps">
+            <h4>📊 How the Price is Calculated:</h4>
+            <div class="step-calculation">
+              <strong>Step 1: Use the Linear Equation</strong><br />
+              Price = w₀ + w₁ × HouseSize<br />
+              Price = <span id="biasCalc">50</span> +
+              <span id="weightCalc">0.15</span> × 1500
+            </div>
+            <div class="step-calculation">
+              <strong>Step 2: Perform the Multiplication</strong><br />
+              Price = <span id="biasCalc2">50</span> + (<span id="weightCalc2"
+                >0.15</span
+              >
+              × 1500)<br />
+              Price = <span id="biasCalc3">50</span> +
+              <span id="multResult">225</span>
+            </div>
+            <div class="step-calculation">
+              <strong>Step 3: Add the Results</strong><br />
+              Price = <span id="biasCalc4">50</span> +
+              <span id="multResult2">225</span><br />
+              Price = <span id="finalResult">275</span> (in $1000s)
+            </div>
+            <div class="step-calculation final-result">
+              <strong>Final Result:</strong><br />
+              Price = $<span id="finalPrice">275,000</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="equation-panel">
+          <h3>Linear Equation</h3>
+          <div class="equation-display" id="equationDisplay">
+            ŷ = 50 + 0.15 × x
+          </div>
+
+          <h4>Expanded Form:</h4>
+          <div
+            style="
+              font-family: 'Courier New', monospace;
+              background: white;
+              padding: 10px;
+              border-radius: 5px;
+            "
+          >
+            Price = w₀ + w₁ × HouseSize<br />
+            Price = <span id="biasInEquation">50</span> +
+            <span id="weightInEquation">0.15</span> × HouseSize
+          </div>
+
+          <h4>Vector Form:</h4>
+          <div
+            style="
+              font-family: 'Courier New', monospace;
+              background: white;
+              padding: 10px;
+              border-radius: 5px;
+              margin-top: 10px;
+            "
+          >
+            ŷ = wᵀx<br />
+            where w = [<span id="vectorW">50, 0.15</span>]<br />
+            and x = [1, HouseSize]
+          </div>
+
+          <div class="vector-explanation">
+            <h5>🔍 Understanding the Vector Form:</h5>
+
+            <div class="vector-step">
+              <strong>Step 1: Vector Dimensions</strong><br />
+              w = [<span id="w1">50</span>, <span id="w2">0.15</span>] is a
+              <strong>row vector</strong> (1×2)<br />
+              x = [1, HouseSize] is a <strong>column vector</strong> (2×1)
+            </div>
+
+            <div class="vector-step">
+              <strong>Step 2: Why Transpose w?</strong><br />
+              • w is [<span id="w1t">50</span>, <span id="w2t">0.15</span>] (row
+              vector)<br />
+              • wᵀ becomes [[<span id="w1tt">50</span>], [<span id="w2tt"
+                >0.15</span
+              >]] (column vector)<br />
+              • This allows matrix multiplication: (1×2) × (2×1) = (1×1) =
+              scalar
+            </div>
+
+            <div class="vector-step">
+              <strong>Step 3: Matrix Multiplication</strong><br />
+              wᵀx = [<span id="w1tm">50</span> <span id="w2tm">0.15</span>] ×
+              [1, HouseSize]ᵀ<br />
+              = <span id="w1tm2">50</span>×1 +
+              <span id="w2tm2">0.15</span>×HouseSize<br />
+              = <span id="w1tm3">50</span> +
+              <span id="w2tm3">0.15</span>×HouseSize
+            </div>
+
+            <div class="vector-step key-insight">
+              <strong>💡 Key Insight:</strong><br />
+              The transpose wᵀ converts our weight row vector into a column
+              vector, enabling the dot product operation that gives us the
+              scalar prediction ŷ.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="explanation">
+        <h3>How Linear Regression Works</h3>
+        <p>
+          <strong>Goal:</strong> Find the straight line that best fits through
+          the data points.
+        </p>
+
+        <h4>Key Components:</h4>
+        <ul>
+          <li>
+            <strong>Bias (w₀):</strong> Where the line crosses the y-axis (base
+            price when house size = 0)
+          </li>
+          <li>
+            <strong>Weight (w₁):</strong> The slope of the line (how much price
+            increases per square foot)
+          </li>
+          <li>
+            <strong>Linear Assumption:</strong> We assume the relationship is a
+            straight line
+          </li>
+        </ul>
+
+        <h4>The Math Trick:</h4>
+        <p>
+          By adding x₀ = 1 as a "dummy" feature, we can write the equation as a
+          simple dot product: <strong>ŷ = wᵀx</strong>
+        </p>
+
+        <h4>Try This:</h4>
+        <p>
+          Adjust the sliders above to see how changing the bias and weight
+          affects the line. Notice how:
+        </p>
+        <ul>
+          <li>Changing <strong>bias</strong> moves the line up/down</li>
+          <li>
+            Changing <strong>weight</strong> changes the steepness (slope) of
+            the line
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <script>
+      // Sample house data: [size, price in thousands]
+      const houseData = [
+        [1000, 180],
+        [1200, 220],
+        [1400, 260],
+        [1500, 275],
+        [1600, 290],
+        [1800, 320],
+        [2000, 360],
+        [2200, 400],
+        [2400, 440],
+      ];
+
+      let chart;
+
+      function updateVisualization() {
+        const bias = parseFloat(document.getElementById("biasSlider").value);
+        const weight = parseFloat(
+          document.getElementById("weightSlider").value
+        );
+
+        // Update display values
+        document.getElementById("biasValue").textContent = bias;
+        document.getElementById("weightValue").textContent = weight;
+        document.getElementById("biasInEquation").textContent = bias;
+        document.getElementById("weightInEquation").textContent = weight;
+        document.getElementById("vectorW").textContent = `${bias}, ${weight}`;
+
+        // Update equation display
+        const sign = weight >= 0 ? "+" : "";
+        document.getElementById(
+          "equationDisplay"
+        ).textContent = `ŷ = ${bias} ${sign} ${weight} × x`;
+
+        // Calculate example prediction
+        const exampleSize = 1500;
+        const examplePrediction = bias + weight * exampleSize;
+        document.getElementById("examplePrediction").textContent = Math.round(
+          examplePrediction * 1000
+        ).toLocaleString();
+
+        // Update calculation steps
+        document.getElementById("biasCalc").textContent = bias;
+        document.getElementById("weightCalc").textContent = weight;
+        document.getElementById("biasCalc2").textContent = bias;
+        document.getElementById("weightCalc2").textContent = weight;
+        document.getElementById("biasCalc3").textContent = bias;
+        document.getElementById("multResult").textContent = Math.round(
+          weight * exampleSize
+        );
+        document.getElementById("biasCalc4").textContent = bias;
+        document.getElementById("multResult2").textContent = Math.round(
+          weight * exampleSize
+        );
+        document.getElementById("finalResult").textContent =
+          Math.round(examplePrediction);
+        document.getElementById("finalPrice").textContent = Math.round(
+          examplePrediction * 1000
+        ).toLocaleString();
+
+        // Update vector explanation values
+        document.getElementById("w1").textContent = bias;
+        document.getElementById("w2").textContent = weight;
+        document.getElementById("w1t").textContent = bias;
+        document.getElementById("w2t").textContent = weight;
+        document.getElementById("w1tt").textContent = bias;
+        document.getElementById("w2tt").textContent = weight;
+        document.getElementById("w1tm").textContent = bias;
+        document.getElementById("w2tm").textContent = weight;
+        document.getElementById("w1tm2").textContent = bias;
+        document.getElementById("w2tm2").textContent = weight;
+        document.getElementById("w1tm3").textContent = bias;
+        document.getElementById("w2tm3").textContent = weight;
+
+        // Generate line data
+        const lineData = [];
+        for (let x = 800; x <= 2500; x += 50) {
+          const y = bias + weight * x;
+          lineData.push({ x: x, y: y });
+        }
+
+        // Convert house data for chart
+        const scatterData = houseData.map(([size, price]) => ({
+          x: size,
+          y: price,
+        }));
+
+        // Update chart
+        chart.data = {
+          datasets: [
+            {
+              label: "Actual House Prices",
+              data: scatterData,
+              type: "scatter",
+              backgroundColor: "rgba(40, 167, 69, 0.6)",
+              borderColor: "rgb(40, 167, 69)",
+              borderWidth: 2,
+              pointRadius: 8,
+            },
+            {
+              label: "Linear Regression Line",
+              data: lineData,
+              type: "line",
+              borderColor: "rgb(220, 53, 69)",
+              backgroundColor: "rgba(220, 53, 69, 0.1)",
+              borderWidth: 3,
+              fill: false,
+              pointRadius: 0,
+              tension: 0,
+            },
+          ],
+        };
+
+        chart.update("none");
+      }
+
+      // Initialize when DOM loads
+      document.addEventListener("DOMContentLoaded", function () {
+        const ctx = document.getElementById("linearChart").getContext("2d");
+
+        chart = new Chart(ctx, {
+          type: "scatter",
+          data: {},
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: true,
+                position: "top",
+              },
+              title: {
+                display: true,
+                text: "House Size vs Price - Linear Regression",
+                font: { size: 16 },
+              },
+            },
+            scales: {
+              x: {
+                title: {
+                  display: true,
+                  text: "House Size (sq ft)",
+                  font: { size: 14 },
+                },
+                min: 800,
+                max: 2500,
+              },
+              y: {
+                title: {
+                  display: true,
+                  text: "Price ($1000s)",
+                  font: { size: 14 },
+                },
+                min: 0,
+                max: 500,
+              },
+            },
+            elements: {
+              point: { hoverRadius: 10 },
+            },
+          },
+        });
+
+        // Add event listeners
+        document
+          .getElementById("biasSlider")
+          .addEventListener("input", updateVisualization);
+        document
+          .getElementById("weightSlider")
+          .addEventListener("input", updateVisualization);
+
+        // Initial render
+        updateVisualization();
+      });
+    </script>
+  </body>
+</html>

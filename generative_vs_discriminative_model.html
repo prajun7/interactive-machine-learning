@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Generative vs Discriminative Classification</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+      }
+      .container {
+        background: white;
+        border-radius: 15px;
+        padding: 30px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      }
+      h1 {
+        color: #333;
+        text-align: center;
+        margin-bottom: 30px;
+        font-size: 2.2em;
+      }
+      h2 {
+        color: #444;
+        border-bottom: 2px solid #667eea;
+        padding-bottom: 5px;
+        margin-top: 30px;
+      }
+      .method-section {
+        margin: 30px 0;
+        padding: 20px;
+        border-radius: 10px;
+        border-left: 5px solid #667eea;
+      }
+      .generative-section {
+        background: #f0f8ff;
+        border-left-color: #4169e1;
+      }
+      .discriminative-section {
+        background: #fff5ee;
+        border-left-color: #ff6347;
+      }
+      .controls {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        margin: 20px 0;
+        border-left: 3px solid #667eea;
+      }
+      .controls h3 {
+        margin-top: 0;
+        color: #333;
+      }
+      .slider-container {
+        margin: 15px 0;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+      }
+      label {
+        font-weight: 600;
+        color: #333;
+        min-width: 140px;
+      }
+      input[type="range"] {
+        flex: 1;
+        height: 8px;
+        border-radius: 4px;
+        background: #ddd;
+        outline: none;
+        -webkit-appearance: none;
+      }
+      input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: #667eea;
+        cursor: pointer;
+      }
+      .value-display {
+        min-width: 80px;
+        font-weight: bold;
+        color: #667eea;
+      }
+      .data-table {
+        background: white;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        margin: 20px 0;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      th {
+        background: #667eea;
+        color: white;
+        padding: 12px;
+        text-align: center;
+        font-weight: 600;
+      }
+      td {
+        padding: 10px;
+        text-align: center;
+        border-bottom: 1px solid #eee;
+      }
+      .heads-row {
+        background: rgba(65, 105, 225, 0.1);
+      }
+      .tails-row {
+        background: rgba(255, 99, 71, 0.1);
+      }
+      .chart-container {
+        position: relative;
+        height: 400px;
+        margin: 20px 0;
+        background: white;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+      .prediction-display {
+        background: #e8f5e8;
+        padding: 20px;
+        border-radius: 8px;
+        margin: 20px 0;
+        border-left: 4px solid #28a745;
+      }
+      .calculation-box {
+        background: #f7fafc;
+        padding: 15px;
+        border-radius: 8px;
+        margin: 15px 0;
+        border: 1px solid #e2e8f0;
+        font-family: monospace;
+        font-size: 0.9em;
+        line-height: 1.6;
+      }
+      .step-box {
+        background: #fff3cd;
+        padding: 15px;
+        border-radius: 8px;
+        margin: 10px 0;
+        border-left: 4px solid #ffc107;
+      }
+      .result-highlight {
+        background: #fed7d7;
+        padding: 10px;
+        border-radius: 5px;
+        font-weight: bold;
+        display: inline-block;
+        margin-top: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div style="margin-bottom: 20px">
+        <a
+          href="index.html"
+          style="
+            text-decoration: none;
+            color: #667eea;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+          "
+        >
+          ← Back to Interactive ML
+        </a>
+      </div>
+
+      <h1>🪙 Generative vs Discriminative Classification</h1>
+
+      <!-- Training Data -->
+      <div class="data-table">
+        <h3>Training Data: Coin Toss Results</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Toss #</th>
+              <th>Force (N)</th>
+              <th>Spin (rev/s)</th>
+              <th>Outcome</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="heads-row">
+              <td>1</td>
+              <td>5</td>
+              <td>10</td>
+              <td>H</td>
+            </tr>
+            <tr class="heads-row">
+              <td>2</td>
+              <td>6</td>
+              <td>12</td>
+              <td>H</td>
+            </tr>
+            <tr class="heads-row">
+              <td>3</td>
+              <td>7</td>
+              <td>8</td>
+              <td>H</td>
+            </tr>
+            <tr class="tails-row">
+              <td>4</td>
+              <td>4</td>
+              <td>9</td>
+              <td>T</td>
+            </tr>
+            <tr class="heads-row">
+              <td>5</td>
+              <td>8</td>
+              <td>15</td>
+              <td>H</td>
+            </tr>
+            <tr class="tails-row">
+              <td>6</td>
+              <td>5</td>
+              <td>11</td>
+              <td>T</td>
+            </tr>
+            <tr class="heads-row">
+              <td>7</td>
+              <td>6</td>
+              <td>14</td>
+              <td>H</td>
+            </tr>
+            <tr class="heads-row">
+              <td>8</td>
+              <td>9</td>
+              <td>16</td>
+              <td>H</td>
+            </tr>
+            <tr class="tails-row">
+              <td>9</td>
+              <td>7</td>
+              <td>13</td>
+              <td>T</td>
+            </tr>
+            <tr class="tails-row">
+              <td>10</td>
+              <td>5</td>
+              <td>10</td>
+              <td>T</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Interactive Controls -->
+      <div class="controls">
+        <h3>🎯 Test New Coin Toss</h3>
+        <div class="slider-container">
+          <label for="testForce">Force (N):</label>
+          <input
+            type="range"
+            id="testForce"
+            min="3"
+            max="12"
+            value="6.5"
+            step="0.5"
+          />
+          <span class="value-display" id="forceValue">6.5</span>
+        </div>
+        <div class="slider-container">
+          <label for="testSpin">Spin (rev/s):</label>
+          <input
+            type="range"
+            id="testSpin"
+            min="5"
+            max="20"
+            value="12"
+            step="0.5"
+          />
+          <span class="value-display" id="spinValue">12</span>
+        </div>
+      </div>
+
+      <!-- Visualization -->
+      <div class="chart-container">
+        <canvas id="classificationChart"></canvas>
+      </div>
+
+      <!-- Side by Side Comparison -->
+      <div
+        style="
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 20px;
+          margin: 30px 0;
+        "
+      >
+        <!-- Generative Approach -->
+        <div class="method-section generative-section">
+          <h2>🧠 Generative Approach (Naive Bayes)</h2>
+          <p>
+            <strong>Strategy:</strong> Learn P(Force, Spin | Class) and
+            P(Class), then use Bayes' theorem
+          </p>
+
+          <div id="generativeCalculations">
+            <!-- Calculations will be inserted here -->
+          </div>
+
+          <div class="prediction-display">
+            <h4>📊 Generative Prediction</h4>
+            <p id="generativePrediction">Calculating...</p>
+          </div>
+        </div>
+
+        <!-- Discriminative Approach -->
+        <div class="method-section discriminative-section">
+          <h2>🎯 Discriminative Approach (Logistic Regression)</h2>
+          <p>
+            <strong>Strategy:</strong> Learn P(Class | Force, Spin) directly
+            using a decision boundary
+          </p>
+
+          <div id="discriminativeCalculations">
+            <!-- Calculations will be inserted here -->
+          </div>
+
+          <div class="prediction-display">
+            <h4>📊 Discriminative Prediction</h4>
+            <p id="discriminativePrediction">Calculating...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Comparison -->
+      <div
+        style="
+          background: #f0f0f0;
+          padding: 20px;
+          border-radius: 10px;
+          margin-top: 30px;
+        "
+      >
+        <h3>🔄 Key Differences</h3>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px">
+          <div style="background: #f0f8ff; padding: 15px; border-radius: 8px">
+            <h4 style="color: #4169e1; margin-top: 0">Generative Model</h4>
+            <ul>
+              <li>Models the full data distribution</li>
+              <li>Can generate new data points</li>
+              <li>Uses Bayes' theorem for classification</li>
+              <li>Needs more data but provides interpretable probabilities</li>
+            </ul>
+          </div>
+          <div style="background: #fff5ee; padding: 15px; border-radius: 8px">
+            <h4 style="color: #ff6347; margin-top: 0">Discriminative Model</h4>
+            <ul>
+              <li>Directly models the decision boundary</li>
+              <li>Focuses only on classification</li>
+              <li>Often more accurate with limited data</li>
+              <li>Computationally efficient for prediction</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Training data
+      const trainingData = [
+        [5, 10, "H"],
+        [6, 12, "H"],
+        [7, 8, "H"],
+        [4, 9, "T"],
+        [8, 15, "H"],
+        [5, 11, "T"],
+        [6, 14, "H"],
+        [9, 16, "H"],
+        [7, 13, "T"],
+        [5, 10, "T"],
+      ];
+
+      let chart;
+
+      // Utility functions
+      function mean(arr) {
+        return arr.reduce((a, b) => a + b, 0) / arr.length;
+      }
+
+      function variance(arr, meanVal) {
+        return (
+          arr.reduce((sum, val) => sum + Math.pow(val - meanVal, 2), 0) /
+          arr.length
+        );
+      }
+
+      function normalPdf(x, mean, variance) {
+        const std = Math.sqrt(variance);
+        return (
+          (1 / (std * Math.sqrt(2 * Math.PI))) *
+          Math.exp(-0.5 * Math.pow((x - mean) / std, 2))
+        );
+      }
+
+      function sigmoid(z) {
+        return 1 / (1 + Math.exp(-z));
+      }
+
+      // Generative model calculations
+      function calculateGenerative(testForce, testSpin) {
+        // Separate data by class
+        const headsData = trainingData.filter((d) => d[2] === "H");
+        const tailsData = trainingData.filter((d) => d[2] === "T");
+
+        // Calculate statistics for each class
+        const headsForces = headsData.map((d) => d[0]);
+        const headsSpin = headsData.map((d) => d[1]);
+        const tailsForces = tailsData.map((d) => d[0]);
+        const tailsSpin = tailsData.map((d) => d[1]);
+
+        const headsForceMean = mean(headsForces);
+        const headsSpinMean = mean(headsSpin);
+        const tailsForceMean = mean(tailsForces);
+        const tailsSpinMean = mean(tailsSpin);
+
+        const headsForceVar = variance(headsForces, headsForceMean);
+        const headsSpinVar = variance(headsSpin, headsSpinMean);
+        const tailsForceVar = variance(tailsForces, tailsForceMean);
+        const tailsSpinVar = variance(tailsSpin, tailsSpinMean);
+
+        // Prior probabilities
+        const priorHeads = headsData.length / trainingData.length;
+        const priorTails = tailsData.length / trainingData.length;
+
+        // Likelihood calculations (assuming feature independence)
+        const likelihoodHeadsForce = normalPdf(
+          testForce,
+          headsForceMean,
+          headsForceVar
+        );
+        const likelihoodHeadsSpin = normalPdf(
+          testSpin,
+          headsSpinMean,
+          headsSpinVar
+        );
+        const likelihoodHeads = likelihoodHeadsForce * likelihoodHeadsSpin;
+
+        const likelihoodTailsForce = normalPdf(
+          testForce,
+          tailsForceMean,
+          tailsForceVar
+        );
+        const likelihoodTailsSpin = normalPdf(
+          testSpin,
+          tailsSpinMean,
+          tailsSpinVar
+        );
+        const likelihoodTails = likelihoodTailsForce * likelihoodTailsSpin;
+
+        // Posterior probabilities (unnormalized)
+        const posteriorHeads = likelihoodHeads * priorHeads;
+        const posteriorTails = likelihoodTails * priorTails;
+
+        // Normalize
+        const evidence = posteriorHeads + posteriorTails;
+        const finalProbHeads = posteriorHeads / evidence;
+        const finalProbTails = posteriorTails / evidence;
+
+        // Update display
+        const calculationsHtml = `
+          <div class="step-box">
+            <h4>Step 1: Calculate Class Statistics</h4>
+            <div class="calculation-box">
+              <strong>Heads Data (${headsData.length} samples):</strong><br>
+              Force: mean = ${headsForceMean.toFixed(
+                2
+              )}N, variance = ${headsForceVar.toFixed(2)}<br>
+              Spin: mean = ${headsSpinMean.toFixed(
+                2
+              )} rev/s, variance = ${headsSpinVar.toFixed(2)}<br><br>
+              
+              <strong>Tails Data (${tailsData.length} samples):</strong><br>
+              Force: mean = ${tailsForceMean.toFixed(
+                2
+              )}N, variance = ${tailsForceVar.toFixed(2)}<br>
+              Spin: mean = ${tailsSpinMean.toFixed(
+                2
+              )} rev/s, variance = ${tailsSpinVar.toFixed(2)}
+            </div>
+          </div>
+
+          <div class="step-box">
+            <h4>Step 2: Prior Probabilities</h4>
+            <div class="calculation-box">
+              P(Heads) = ${headsData.length}/10 = ${priorHeads.toFixed(2)}<br>
+              P(Tails) = ${tailsData.length}/10 = ${priorTails.toFixed(2)}
+            </div>
+          </div>
+
+          <div class="step-box">
+            <h4>Step 3: Calculate Likelihoods</h4>
+            <div class="calculation-box">
+              <strong>For test point (${testForce}N, ${testSpin} rev/s):</strong><br><br>
+              
+              P(Force=${testForce} | Heads) = ${likelihoodHeadsForce.toFixed(
+          6
+        )}<br>
+              P(Spin=${testSpin} | Heads) = ${likelihoodHeadsSpin.toFixed(
+          6
+        )}<br>
+              P(Force,Spin | Heads) = ${likelihoodHeads.toFixed(8)}<br><br>
+              
+              P(Force=${testForce} | Tails) = ${likelihoodTailsForce.toFixed(
+          6
+        )}<br>
+              P(Spin=${testSpin} | Tails) = ${likelihoodTailsSpin.toFixed(
+          6
+        )}<br>
+              P(Force,Spin | Tails) = ${likelihoodTails.toFixed(8)}
+            </div>
+          </div>
+
+          <div class="step-box">
+            <h4>Step 4: Apply Bayes' Theorem</h4>
+            <div class="calculation-box">
+              P(Heads | Force,Spin) ∝ P(Force,Spin | Heads) × P(Heads)<br>
+              = ${likelihoodHeads.toFixed(8)} × ${priorHeads.toFixed(
+          2
+        )} = ${posteriorHeads.toFixed(8)}<br><br>
+              
+              P(Tails | Force,Spin) ∝ P(Force,Spin | Tails) × P(Tails)<br>
+              = ${likelihoodTails.toFixed(8)} × ${priorTails.toFixed(
+          2
+        )} = ${posteriorTails.toFixed(8)}<br><br>
+              
+              <div class="result-highlight">
+                Final: P(Heads) = ${(finalProbHeads * 100).toFixed(
+                  1
+                )}%, P(Tails) = ${(finalProbTails * 100).toFixed(1)}%
+              </div>
+            </div>
+          </div>
+        `;
+
+        document.getElementById("generativeCalculations").innerHTML =
+          calculationsHtml;
+
+        const prediction = finalProbHeads > finalProbTails ? "Heads" : "Tails";
+        const confidence = Math.max(finalProbHeads, finalProbTails) * 100;
+
+        document.getElementById(
+          "generativePrediction"
+        ).innerHTML = `<strong>Prediction: ${prediction}</strong><br>Confidence: ${confidence.toFixed(
+          1
+        )}%<br>P(Heads) = ${(finalProbHeads * 100).toFixed(1)}%, P(Tails) = ${(
+          finalProbTails * 100
+        ).toFixed(1)}%`;
+
+        return { prediction, confidence: finalProbHeads };
+      }
+
+      // Simplified discriminative model (logistic regression approximation)
+      function calculateDiscriminative(testForce, testSpin) {
+        // Simple logistic regression with manually tuned weights
+        // In practice, these would be learned through gradient descent
+        const w0 = -2.5; // bias
+        const w1 = 0.4; // force coefficient
+        const w2 = 0.1; // spin coefficient
+
+        const z = w0 + w1 * testForce + w2 * testSpin;
+        const probHeads = sigmoid(z);
+        const probTails = 1 - probHeads;
+
+        const calculationsHtml = `
+          <div class="step-box">
+            <h4>Step 1: Define Decision Boundary</h4>
+            <div class="calculation-box">
+              <strong>Logistic Regression Model:</strong><br>
+              P(Heads | Force, Spin) = σ(w₀ + w₁×Force + w₂×Spin)<br><br>
+              
+              <strong>Learned Parameters (simplified):</strong><br>
+              w₀ (bias) = ${w0}<br>
+              w₁ (force weight) = ${w1}<br>
+              w₂ (spin weight) = ${w2}
+            </div>
+          </div>
+
+          <div class="step-box">
+            <h4>Step 2: Calculate Linear Combination</h4>
+            <div class="calculation-box">
+              z = w₀ + w₁×Force + w₂×Spin<br>
+              z = ${w0} + ${w1}×${testForce} + ${w2}×${testSpin}<br>
+              z = ${w0} + ${(w1 * testForce).toFixed(2)} + ${(
+          w2 * testSpin
+        ).toFixed(2)}<br>
+              z = ${z.toFixed(3)}
+            </div>
+          </div>
+
+          <div class="step-box">
+            <h4>Step 3: Apply Sigmoid Function</h4>
+            <div class="calculation-box">
+              P(Heads) = σ(z) = 1 / (1 + e^(-z))<br>
+              P(Heads) = 1 / (1 + e^(-${z.toFixed(3)}))<br>
+              P(Heads) = 1 / (1 + ${Math.exp(-z).toFixed(4)})<br>
+              P(Heads) = ${probHeads.toFixed(4)}<br><br>
+              
+              P(Tails) = 1 - P(Heads) = ${probTails.toFixed(4)}<br><br>
+              
+              <div class="result-highlight">
+                Final: P(Heads) = ${(probHeads * 100).toFixed(
+                  1
+                )}%, P(Tails) = ${(probTails * 100).toFixed(1)}%
+              </div>
+            </div>
+          </div>
+        `;
+
+        document.getElementById("discriminativeCalculations").innerHTML =
+          calculationsHtml;
+
+        const prediction = probHeads > probTails ? "Heads" : "Tails";
+        const confidence = Math.max(probHeads, probTails) * 100;
+
+        document.getElementById(
+          "discriminativePrediction"
+        ).innerHTML = `<strong>Prediction: ${prediction}</strong><br>Confidence: ${confidence.toFixed(
+          1
+        )}%<br>P(Heads) = ${(probHeads * 100).toFixed(1)}%, P(Tails) = ${(
+          probTails * 100
+        ).toFixed(1)}%`;
+
+        return { prediction, confidence: probHeads };
+      }
+
+      function updatePredictions() {
+        const testForce = parseFloat(
+          document.getElementById("testForce").value
+        );
+        const testSpin = parseFloat(document.getElementById("testSpin").value);
+
+        document.getElementById("forceValue").textContent = testForce;
+        document.getElementById("spinValue").textContent = testSpin;
+
+        const generativeResult = calculateGenerative(testForce, testSpin);
+        const discriminativeResult = calculateDiscriminative(
+          testForce,
+          testSpin
+        );
+
+        updateChart(testForce, testSpin);
+      }
+
+      function updateChart(testForce, testSpin) {
+        // Separate training data by class
+        const headsData = trainingData.filter((d) => d[2] === "H");
+        const tailsData = trainingData.filter((d) => d[2] === "T");
+
+        const headsPoints = headsData.map((d) => ({ x: d[0], y: d[1] }));
+        const tailsPoints = tailsData.map((d) => ({ x: d[0], y: d[1] }));
+
+        chart.data = {
+          datasets: [
+            {
+              label: "Heads Training Data",
+              data: headsPoints,
+              backgroundColor: "rgba(65, 105, 225, 0.7)",
+              borderColor: "rgb(65, 105, 225)",
+              borderWidth: 2,
+              pointRadius: 8,
+            },
+            {
+              label: "Tails Training Data",
+              data: tailsPoints,
+              backgroundColor: "rgba(255, 99, 71, 0.7)",
+              borderColor: "rgb(255, 99, 71)",
+              borderWidth: 2,
+              pointRadius: 8,
+            },
+            {
+              label: "Test Point",
+              data: [{ x: testForce, y: testSpin }],
+              backgroundColor: "rgba(255, 215, 0, 0.9)",
+              borderColor: "rgb(255, 165, 0)",
+              borderWidth: 3,
+              pointRadius: 12,
+              pointStyle: "triangle",
+            },
+          ],
+        };
+
+        chart.update("none");
+      }
+
+      // Initialize everything
+      document.addEventListener("DOMContentLoaded", function () {
+        const ctx = document
+          .getElementById("classificationChart")
+          .getContext("2d");
+
+        chart = new Chart(ctx, {
+          type: "scatter",
+          data: {},
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: true,
+                position: "top",
+              },
+              title: {
+                display: true,
+                text: "Coin Toss Data: Force vs Spin Rate",
+              },
+            },
+            scales: {
+              x: {
+                title: {
+                  display: true,
+                  text: "Force (N)",
+                },
+                min: 3,
+                max: 12,
+              },
+              y: {
+                title: {
+                  display: true,
+                  text: "Spin Rate (rev/s)",
+                },
+                min: 5,
+                max: 20,
+              },
+            },
+          },
+        });
+
+        // Event listeners
+        document
+          .getElementById("testForce")
+          .addEventListener("input", updatePredictions);
+        document
+          .getElementById("testSpin")
+          .addEventListener("input", updatePredictions);
+
+        // Initial calculation
+        updatePredictions();
+      });
+    </script>
+  </body>
+</html>

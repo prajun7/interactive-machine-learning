@@ -1,0 +1,1208 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gradient Descent Visualization</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 20px;
+      }
+
+      .container {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 30px;
+      }
+
+      h1 {
+        text-align: center;
+        color: #333;
+        margin-bottom: 10px;
+        font-size: 2.2em;
+      }
+
+      .subtitle {
+        text-align: center;
+        color: #666;
+        margin-bottom: 30px;
+        font-size: 1.1em;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+        margin-bottom: 30px;
+      }
+
+      .panel {
+        background: #f8f9fa;
+        border-radius: 15px;
+        padding: 20px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+
+      .panel h2 {
+        color: #495057;
+        margin-bottom: 15px;
+        font-size: 1.3em;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      canvas {
+        border-radius: 10px;
+        background: white;
+        width: 100%;
+        height: 400px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      }
+
+      .controls {
+        background: #f8f9fa;
+        border-radius: 15px;
+        padding: 25px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+
+      .control-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 20px;
+      }
+
+      .control-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      label {
+        font-weight: 600;
+        color: #495057;
+        font-size: 0.9em;
+      }
+
+      input[type="range"] {
+        width: 100%;
+        height: 6px;
+        border-radius: 3px;
+        background: #dee2e6;
+        outline: none;
+      }
+
+      input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: #667eea;
+        cursor: pointer;
+      }
+
+      .value-display {
+        background: white;
+        padding: 8px 12px;
+        border-radius: 6px;
+        font-family: "Courier New", monospace;
+        font-size: 0.95em;
+        color: #495057;
+        text-align: center;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        border: 1px solid #e9ecef;
+      }
+
+      button {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-size: 1em;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        margin: 5px;
+      }
+
+      button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+      }
+
+      button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .button-group {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 15px;
+        margin-top: 15px;
+      }
+
+      .stat-item {
+        background: white;
+        padding: 15px;
+        border-radius: 8px;
+        text-align: center;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        border: 1px solid #e9ecef;
+      }
+
+      .stat-label {
+        font-size: 0.85em;
+        color: #6c757d;
+        margin-bottom: 8px;
+        font-weight: 500;
+      }
+
+      .stat-value {
+        font-size: 1.4em;
+        font-weight: bold;
+        color: #495057;
+        font-family: "Courier New", monospace;
+      }
+
+      .legend {
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+        margin-top: 15px;
+        flex-wrap: wrap;
+      }
+
+      .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.9em;
+        color: #495057;
+        padding: 5px 10px;
+        background: white;
+        border-radius: 6px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      }
+
+      .legend-color {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+      }
+
+      .info-box {
+        background: white;
+        border-left: 4px solid #667eea;
+        padding: 20px;
+        border-radius: 8px;
+        margin-top: 20px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      }
+
+      .info-box h3 {
+        color: #495057;
+        margin-bottom: 15px;
+        font-size: 1.2em;
+      }
+
+      .formula-box {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        margin: 15px 0;
+        border: 1px solid #e9ecef;
+      }
+
+      .formula {
+        font-family: "Courier New", monospace;
+        color: #495057;
+        font-size: 1.1em;
+        text-align: center;
+        margin: 8px 0;
+      }
+
+      .scenario-box {
+        background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+        padding: 20px;
+        border-radius: 10px;
+        margin: 20px 0;
+        border-left: 4px solid #2196f3;
+      }
+
+      .warning-box {
+        background: linear-gradient(135deg, #fff3e0, #ffe0b2);
+        padding: 15px;
+        border-radius: 8px;
+        margin: 15px 0;
+        border-left: 4px solid #ff9800;
+      }
+
+      .success-box {
+        background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+        padding: 15px;
+        border-radius: 8px;
+        margin: 15px 0;
+        border-left: 4px solid #4caf50;
+      }
+
+      /* Status indicator styling */
+      #statusIndicator .stat-value {
+        font-size: 1.1em;
+        font-weight: bold;
+      }
+
+      /* Back button styling */
+      .back-link {
+        text-decoration: none;
+        color: #667eea;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 20px;
+      }
+
+      .back-link:hover {
+        color: #5a67d8;
+        text-decoration: underline;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <a href="index.html" class="back-link">← Back to Interactive ML</a>
+
+      <h1>🎯 Gradient Descent: Ball Rolling Down the Loss Curve</h1>
+      <div class="subtitle">
+        Watch the ball find the perfect learning rate to reach the global
+        minimum
+      </div>
+
+      <div class="scenario-box">
+        <h3>🧠 The Problem: Finding the Global Minimum</h3>
+        <p>
+          <strong>Imagine:</strong> A ball rolling down a complex loss function
+          with multiple minima.
+        </p>
+        <p>
+          <strong>Current Position:</strong>
+          θ = <span id="currentPrediction">4.50</span>
+        </p>
+        <p>
+          <strong>Current Loss:</strong> <span id="currentError">0.00</span>
+        </p>
+        <p>
+          <strong>Goal:</strong> Reach the global minimum (green star ★) without
+          getting stuck in local minima (orange dots)
+        </p>
+      </div>
+
+      <div class="grid">
+        <div class="panel">
+          <h2>📈 1D Loss Function & Learning Rate Effects</h2>
+          <canvas id="lossCanvas"></canvas>
+          <div class="legend">
+            <div class="legend-item">
+              <div class="legend-color" style="background: #4caf50"></div>
+              <span>Global Minimum</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color" style="background: #ff9800"></div>
+              <span>Local Minimum</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color" style="background: #f44336"></div>
+              <span>Current Position (Ball)</span>
+            </div>
+            <div class="legend-item">
+              <div
+                class="legend-color"
+                style="background: rgba(255, 165, 0, 0.8)"
+              ></div>
+              <span>Learning Path</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2>📊 Training Progress</h2>
+          <canvas id="progressCanvas"></canvas>
+          <div class="stats">
+            <div class="stat-item">
+              <div class="stat-label">Current Loss</div>
+              <div class="stat-value" id="currentLoss">0.000</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-label">Target Loss</div>
+              <div class="stat-value">0.000</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-label">Epoch</div>
+              <div class="stat-value" id="iteration">0</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-label">Convergence</div>
+              <div class="stat-value" id="convergence">0%</div>
+            </div>
+            <div class="stat-item" id="statusIndicator" style="display: none">
+              <div class="stat-label">Status</div>
+              <div class="stat-value" id="statusValue">Stable</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <h2>⚙️ Training Parameters</h2>
+        <div class="control-grid">
+          <div class="control-group">
+            <label for="learningRate">Learning Rate (α)</label>
+            <input
+              type="range"
+              id="learningRate"
+              min="0.01"
+              max="1.0"
+              step="0.01"
+              value="0.1"
+            />
+            <div class="value-display" id="learningRateValue">0.10</div>
+          </div>
+          <div class="control-group">
+            <label for="startX">Initial θ (1D Parameter)</label>
+            <input
+              type="range"
+              id="startX"
+              min="-1"
+              max="5"
+              step="0.1"
+              value="4.5"
+            />
+            <div class="value-display" id="startXValue">4.5</div>
+          </div>
+          <div class="control-group">
+            <label for="startY">Neural Net Weight 2 (w₂)</label>
+            <input
+              type="range"
+              id="startY"
+              min="-2"
+              max="6"
+              step="0.1"
+              value="0"
+            />
+            <div class="value-display" id="startYValue">0.0</div>
+          </div>
+          <div class="control-group">
+            <label for="speed">Training Speed</label>
+            <input
+              type="range"
+              id="speed"
+              min="10"
+              max="1000"
+              step="10"
+              value="100"
+            />
+            <div class="value-display" id="speedValue">100ms</div>
+          </div>
+        </div>
+
+        <div class="button-group">
+          <button id="startBtn">▶️ Start Training</button>
+          <button id="pauseBtn" disabled>⏸️ Pause</button>
+          <button id="resetBtn">🔄 Reset</button>
+          <button id="stepBtn">👣 Single Step</button>
+        </div>
+      </div>
+
+      <div class="info-box">
+        <h3>🎓 Understanding Learning Rate Effects</h3>
+
+        <div class="formula-box">
+          <h4>🎯 The 1D Loss Function:</h4>
+          <div class="formula">L(θ) = { 0.8(θ-0.5)² + 1.2 if θ < 1.75 }</div>
+          <div class="formula">{ 0.3(θ-3)² + 0.5 if θ ≥ 1.75 }</div>
+          <p style="margin-top: 10px; color: #666">
+            This piecewise function creates clear minima:
+            <strong>Global minimum</strong> at θ=3 (loss=0.5) and
+            <strong>Local minimum</strong> at θ=0.5 (loss=1.2)
+          </p>
+        </div>
+
+        <div class="success-box">
+          <h4>✅ Perfect Learning Rate (0.1 - 0.3)</h4>
+          <p>
+            <strong>Behavior:</strong> Smooth, steady descent toward the nearest
+            minimum
+          </p>
+          <p>
+            <strong>Result:</strong> Reliable convergence without overshooting
+          </p>
+          <p><strong>Best for:</strong> Most practical applications</p>
+        </div>
+
+        <div class="warning-box">
+          <h4>🐌 Too Low Learning Rate (< 0.05)</h4>
+          <p>
+            <strong>Behavior:</strong> Very small steps, extremely slow progress
+          </p>
+          <p>
+            <strong>Problem:</strong> May get stuck in local minima, takes
+            forever to converge
+          </p>
+          <p>
+            <strong>Risk:</strong> Training might not finish in reasonable time
+          </p>
+        </div>
+
+        <div
+          style="
+            background: linear-gradient(135deg, #ffebee, #ffcdd2);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid #f44336;
+          "
+        >
+          <h4>⚠️ Too High Learning Rate (> 0.5)</h4>
+          <p>
+            <strong>Behavior:</strong> Large jumps that overshoot the minimum
+          </p>
+          <p>
+            <strong>Problem:</strong> Oscillates around minimum, might diverge
+            completely
+          </p>
+          <p>
+            <strong>Risk:</strong> Can jump out of good minima and never
+            converge
+          </p>
+        </div>
+
+        <div class="scenario-box">
+          <h3>🧪 Experiment with Different Starting Points</h3>
+          <p>
+            <strong>Start at θ = 4:</strong> Should roll down to the global
+            minimum at θ=3 (green star ★, loss=0.5) - the lowest point
+          </p>
+          <p>
+            <strong>Start at θ = -1:</strong> Might get trapped in the local
+            minimum at θ=0.5 (orange dot ⚬, loss=1.2) - higher than global
+            minimum
+          </p>
+          <p>
+            <strong>Start at θ = 1.75:</strong> Critical transition point! Could
+            go either direction depending on learning rate and numerical
+            precision
+          </p>
+          <p>
+            <strong>High LR Risk:</strong> Might overshoot and bounce between
+            minima or diverge completely
+          </p>
+        </div>
+
+        <div class="formula-box">
+          <h4>🔄 Gradient Descent Update Rule:</h4>
+          <div class="formula">θ_new = θ_old - α × ∇L(θ_old)</div>
+          <div class="formula">∇L(θ) = { 1.6(θ-0.5) if θ < 1.75 }</div>
+          <div class="formula">{ 0.6(θ-3) if θ ≥ 1.75 }</div>
+          <p style="margin-top: 10px; color: #666">
+            The ball rolls in the direction opposite to the gradient (downhill).
+            Note: The gradient changes slope at θ=1.75 (transition point).
+          </p>
+        </div>
+
+        <div class="info-box" style="margin-top: 20px">
+          <h4>📊 Understanding the Metrics</h4>
+          <p>
+            <strong>Convergence Percentage:</strong> Shows how much the loss has
+            decreased from the starting point. Ranges from 0% (no improvement)
+            to 100% (perfect convergence).
+          </p>
+          <p>
+            <strong>Status Indicator:</strong> Automatically appears to show if
+            the algorithm is converging (✅), unstable (⚠️), or diverging (⚠️).
+          </p>
+          <p>
+            <strong>Loss Clamping:</strong> When loss values become extremely
+            large due to high learning rates, they're capped at 1000 for display
+            purposes to keep the visualization readable.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Neural network setup
+      const INPUT1 = 2;
+      const INPUT2 = 1;
+      const TARGET = 5;
+      const OPTIMAL_W1 = 2.0; // One possible optimal point
+      const OPTIMAL_W2 = 1.0;
+
+      // Global variables
+      let interval = null;
+      let isRunning = false;
+      let currentX, currentY; // w1, w2 (for neural network)
+      let currentTheta = 0; // parameter for 1D visualization
+      let path = [];
+      let lossHistory = [];
+      let iterationCount = 0;
+      let path1D = []; // for 1D visualization path
+
+      // Get DOM elements
+      const lossCanvas = document.getElementById("lossCanvas");
+      const progressCanvas = document.getElementById("progressCanvas");
+      const lossCtx = lossCanvas.getContext("2d");
+      const progressCtx = progressCanvas.getContext("2d");
+
+      const startBtn = document.getElementById("startBtn");
+      const pauseBtn = document.getElementById("pauseBtn");
+      const resetBtn = document.getElementById("resetBtn");
+      const stepBtn = document.getElementById("stepBtn");
+
+      const learningRateSlider = document.getElementById("learningRate");
+      const startXSlider = document.getElementById("startX");
+      const startYSlider = document.getElementById("startY");
+      const speedSlider = document.getElementById("speed");
+
+      const currentPredictionEl = document.getElementById("currentPrediction");
+      const currentErrorEl = document.getElementById("currentError");
+      const currentLossEl = document.getElementById("currentLoss");
+      const iterationEl = document.getElementById("iteration");
+      const convergenceEl = document.getElementById("convergence");
+
+      // Initialize canvases
+      function initCanvases() {
+        const rect = lossCanvas.getBoundingClientRect();
+        lossCanvas.width = rect.width * window.devicePixelRatio;
+        lossCanvas.height = rect.height * window.devicePixelRatio;
+        lossCtx.scale(window.devicePixelRatio, window.devicePixelRatio);
+        progressCanvas.width = rect.width * window.devicePixelRatio;
+        progressCanvas.height = rect.height * window.devicePixelRatio;
+        progressCtx.scale(window.devicePixelRatio, window.devicePixelRatio);
+      }
+
+      // Neural network prediction
+      function predict(w1, w2) {
+        return w1 * INPUT1 + w2 * INPUT2;
+      }
+
+      // Loss function (Mean Squared Error)
+      function lossFunction(w1, w2) {
+        const prediction = predict(w1, w2);
+        const error = prediction - TARGET;
+        return 0.5 * error * error;
+      }
+
+      // Gradient of loss function
+      function gradient(w1, w2) {
+        const prediction = predict(w1, w2);
+        const error = prediction - TARGET;
+        return {
+          dw1: error * INPUT1,
+          dw2: error * INPUT2,
+        };
+      }
+
+      // 1D Loss function with clear local and global minima
+      function loss1D(theta) {
+        // Piecewise function that creates clear minima:
+        // Global minimum at theta=3, Local minimum at theta=0.5
+        if (theta < 1.75) {
+          // Left side: parabola with minimum at theta=0.5
+          return 0.8 * Math.pow(theta - 0.5, 2) + 1.2;
+        } else {
+          // Right side: parabola with minimum at theta=3
+          return 0.3 * Math.pow(theta - 3, 2) + 0.5;
+        }
+      }
+
+      // Derivative of 1D loss function
+      function gradient1D(theta) {
+        if (theta < 1.75) {
+          // Left side derivative: 1.6*(theta - 0.5)
+          return 1.6 * (theta - 0.5);
+        } else {
+          // Right side derivative: 0.6*(theta - 3)
+          return 0.6 * (theta - 3);
+        }
+      }
+
+      // Map 1D coordinates to canvas
+      function mapToCanvas1D(theta, loss, canvas) {
+        const padding = 50;
+        const canvasWidth = canvas.width / window.devicePixelRatio;
+        const canvasHeight = canvas.height / window.devicePixelRatio;
+
+        const thetaRange = 8; // -2 to 6
+        const lossRange = 6; // 0 to 6
+
+        const x =
+          padding + ((theta + 2) / thetaRange) * (canvasWidth - 2 * padding);
+        const y =
+          canvasHeight -
+          padding -
+          (loss / lossRange) * (canvasHeight - 2 * padding);
+
+        return { x, y };
+      }
+
+      // Draw 1D loss function with ball rolling visualization
+      function drawLossSurface() {
+        const canvasWidth = lossCanvas.width / window.devicePixelRatio;
+        const canvasHeight = lossCanvas.height / window.devicePixelRatio;
+        lossCtx.clearRect(0, 0, canvasWidth, canvasHeight);
+
+        const padding = 50;
+
+        // Draw axes
+        lossCtx.strokeStyle = "#dee2e6";
+        lossCtx.lineWidth = 2;
+        lossCtx.beginPath();
+        lossCtx.moveTo(padding, canvasHeight - padding);
+        lossCtx.lineTo(canvasWidth - padding, canvasHeight - padding);
+        lossCtx.moveTo(padding, padding);
+        lossCtx.lineTo(padding, canvasHeight - padding);
+        lossCtx.stroke();
+
+        // Draw grid
+        lossCtx.strokeStyle = "#f1f3f4";
+        lossCtx.lineWidth = 1;
+
+        // Vertical grid lines
+        for (let theta = -2; theta <= 6; theta += 1) {
+          const x = padding + ((theta + 2) / 8) * (canvasWidth - 2 * padding);
+          lossCtx.beginPath();
+          lossCtx.moveTo(x, padding);
+          lossCtx.lineTo(x, canvasHeight - padding);
+          lossCtx.stroke();
+        }
+
+        // Horizontal grid lines
+        for (let loss = 0; loss <= 6; loss += 1) {
+          const y =
+            canvasHeight - padding - (loss / 6) * (canvasHeight - 2 * padding);
+          lossCtx.beginPath();
+          lossCtx.moveTo(padding, y);
+          lossCtx.lineTo(canvasWidth - padding, y);
+          lossCtx.stroke();
+        }
+
+        // Draw the loss function curve
+        lossCtx.strokeStyle = "#667eea";
+        lossCtx.lineWidth = 3;
+        lossCtx.beginPath();
+
+        let firstPoint = true;
+        for (let theta = -2; theta <= 6; theta += 0.05) {
+          const loss = loss1D(theta);
+          if (loss <= 6) {
+            // Only draw if within range
+            const point = mapToCanvas1D(theta, loss, lossCanvas);
+            if (firstPoint) {
+              lossCtx.moveTo(point.x, point.y);
+              firstPoint = false;
+            } else {
+              lossCtx.lineTo(point.x, point.y);
+            }
+          }
+        }
+        lossCtx.stroke();
+
+        // Define the known minima for our piecewise function
+        const globalMin = { theta: 3.0, loss: 0.5 }; // Global minimum (lowest)
+        const localMin = { theta: 0.5, loss: 1.2 }; // Local minimum (higher)
+
+        // Draw global minimum
+        const globalPoint = mapToCanvas1D(
+          globalMin.theta,
+          globalMin.loss,
+          lossCanvas
+        );
+        lossCtx.fillStyle = "#4CAF50";
+        lossCtx.beginPath();
+        lossCtx.arc(globalPoint.x, globalPoint.y, 8, 0, 2 * Math.PI);
+        lossCtx.fill();
+        lossCtx.fillStyle = "white";
+        lossCtx.font = "bold 10px Arial";
+        lossCtx.textAlign = "center";
+        lossCtx.fillText("★", globalPoint.x, globalPoint.y + 3);
+
+        // Draw local minimum
+        const localPoint = mapToCanvas1D(
+          localMin.theta,
+          localMin.loss,
+          lossCanvas
+        );
+        lossCtx.fillStyle = "#ff9800";
+        lossCtx.beginPath();
+        lossCtx.arc(localPoint.x, localPoint.y, 8, 0, 2 * Math.PI);
+        lossCtx.fill();
+        lossCtx.fillStyle = "white";
+        lossCtx.fillText("⚬", localPoint.x, localPoint.y + 3);
+
+        // Draw path
+        if (path1D.length > 1) {
+          lossCtx.strokeStyle = "rgba(255, 165, 0, 0.7)";
+          lossCtx.lineWidth = 2;
+          lossCtx.beginPath();
+          path1D.forEach((point, i) => {
+            const canvasPoint = mapToCanvas1D(
+              point.theta,
+              point.loss,
+              lossCanvas
+            );
+            if (i === 0) {
+              lossCtx.moveTo(canvasPoint.x, canvasPoint.y);
+            } else {
+              lossCtx.lineTo(canvasPoint.x, canvasPoint.y);
+            }
+          });
+          lossCtx.stroke();
+
+          // Draw path points
+          path1D.forEach((point, i) => {
+            if (i > 0 && i < path1D.length - 1 && i % 3 === 0) {
+              const canvasPoint = mapToCanvas1D(
+                point.theta,
+                point.loss,
+                lossCanvas
+              );
+              lossCtx.fillStyle = "rgba(255, 165, 0, 0.6)";
+              lossCtx.beginPath();
+              lossCtx.arc(canvasPoint.x, canvasPoint.y, 3, 0, 2 * Math.PI);
+              lossCtx.fill();
+            }
+          });
+        }
+
+        // Draw current ball position
+        if (currentTheta >= -2 && currentTheta <= 6) {
+          const currentLoss = loss1D(currentTheta);
+          if (currentLoss <= 6) {
+            const currentPoint = mapToCanvas1D(
+              currentTheta,
+              currentLoss,
+              lossCanvas
+            );
+
+            // Draw ball shadow
+            lossCtx.fillStyle = "rgba(0, 0, 0, 0.2)";
+            lossCtx.beginPath();
+            lossCtx.ellipse(
+              currentPoint.x + 2,
+              currentPoint.y + 15,
+              8,
+              3,
+              0,
+              0,
+              2 * Math.PI
+            );
+            lossCtx.fill();
+
+            // Draw ball
+            const gradient = lossCtx.createRadialGradient(
+              currentPoint.x - 3,
+              currentPoint.y - 3,
+              0,
+              currentPoint.x,
+              currentPoint.y,
+              10
+            );
+            gradient.addColorStop(0, "#ff6b6b");
+            gradient.addColorStop(1, "#d32f2f");
+
+            lossCtx.fillStyle = gradient;
+            lossCtx.beginPath();
+            lossCtx.arc(currentPoint.x, currentPoint.y, 10, 0, 2 * Math.PI);
+            lossCtx.fill();
+
+            // Ball highlight
+            lossCtx.fillStyle = "rgba(255, 255, 255, 0.6)";
+            lossCtx.beginPath();
+            lossCtx.arc(
+              currentPoint.x - 3,
+              currentPoint.y - 3,
+              3,
+              0,
+              2 * Math.PI
+            );
+            lossCtx.fill();
+
+            // Draw gradient arrow
+            const grad = gradient1D(currentTheta);
+            if (Math.abs(grad) > 0.01) {
+              const arrowScale = Math.min(50, Math.abs(grad) * 20);
+              const arrowEndX = currentPoint.x - Math.sign(grad) * arrowScale;
+              const arrowEndY = currentPoint.y;
+
+              lossCtx.strokeStyle = "#e91e63";
+              lossCtx.lineWidth = 3;
+              lossCtx.beginPath();
+              lossCtx.moveTo(currentPoint.x, currentPoint.y - 15);
+              lossCtx.lineTo(arrowEndX, arrowEndY - 15);
+              lossCtx.stroke();
+
+              // Arrowhead
+              lossCtx.fillStyle = "#e91e63";
+              lossCtx.beginPath();
+              lossCtx.moveTo(arrowEndX, arrowEndY - 15);
+              lossCtx.lineTo(arrowEndX + Math.sign(grad) * 8, arrowEndY - 20);
+              lossCtx.lineTo(arrowEndX + Math.sign(grad) * 8, arrowEndY - 10);
+              lossCtx.closePath();
+              lossCtx.fill();
+            }
+          }
+        }
+
+        // Draw axis labels
+        lossCtx.fillStyle = "#6c757d";
+        lossCtx.font = "12px Arial";
+        lossCtx.textAlign = "center";
+
+        // X-axis labels
+        for (let theta = -2; theta <= 6; theta += 2) {
+          const x = padding + ((theta + 2) / 8) * (canvasWidth - 2 * padding);
+          lossCtx.fillText(theta.toString(), x, canvasHeight - padding + 20);
+        }
+        lossCtx.fillText("θ (Parameter)", canvasWidth / 2, canvasHeight - 15);
+
+        // Y-axis labels
+        lossCtx.textAlign = "right";
+        for (let loss = 0; loss <= 6; loss += 2) {
+          const y =
+            canvasHeight - padding - (loss / 6) * (canvasHeight - 2 * padding);
+          lossCtx.fillText(loss.toString(), padding - 10, y + 4);
+        }
+        lossCtx.save();
+        lossCtx.translate(20, canvasHeight / 2);
+        lossCtx.rotate(-Math.PI / 2);
+        lossCtx.textAlign = "center";
+        lossCtx.fillText("Loss", 0, 0);
+        lossCtx.restore();
+
+        // Add learning rate effect annotations
+        const learningRate = parseFloat(learningRateSlider.value);
+        let rateText = "";
+        let rateColor = "#333";
+
+        if (learningRate > 0.5) {
+          rateText = "⚠️ High LR: Risk of overshooting!";
+          rateColor = "#f44336";
+        } else if (learningRate < 0.05) {
+          rateText = "🐌 Low LR: Very slow convergence";
+          rateColor = "#ff9800";
+        } else {
+          rateText = "✅ Good LR: Steady progress";
+          rateColor = "#4caf50";
+        }
+
+        lossCtx.fillStyle = rateColor;
+        lossCtx.font = "bold 14px Arial";
+        lossCtx.textAlign = "center";
+        lossCtx.fillText(rateText, canvasWidth / 2, 30);
+      }
+
+      // Draw progress chart
+      function drawProgress() {
+        const canvasWidth = progressCanvas.width / window.devicePixelRatio;
+        const canvasHeight = progressCanvas.height / window.devicePixelRatio;
+        progressCtx.clearRect(0, 0, canvasWidth, canvasHeight);
+
+        if (lossHistory.length === 0) return;
+
+        const padding = 50;
+        const width = canvasWidth - 2 * padding;
+        const height = canvasHeight - 2 * padding;
+
+        // Handle large loss values for better visualization
+        let maxLoss = Math.max(...lossHistory);
+        maxLoss = Math.max(maxLoss, 1); // Minimum max for scale
+
+        // Cap the maximum loss for display to prevent extremely large scales
+        const displayMaxLoss = Math.min(maxLoss, 1000);
+        if (maxLoss > 1000) {
+          maxLoss = 1000; // Use capped value for scaling
+        }
+
+        // Draw axes
+        progressCtx.strokeStyle = "#dee2e6";
+        progressCtx.lineWidth = 2;
+        progressCtx.beginPath();
+        progressCtx.moveTo(padding, padding);
+        progressCtx.lineTo(padding, canvasHeight - padding);
+        progressCtx.lineTo(canvasWidth - padding, canvasHeight - padding);
+        progressCtx.stroke();
+
+        // Draw y grid lines and labels
+        progressCtx.strokeStyle = "#e9ecef";
+        progressCtx.lineWidth = 1;
+        progressCtx.fillStyle = "#6c757d";
+        progressCtx.font = "10px Arial";
+        progressCtx.textAlign = "right";
+
+        for (let i = 0; i <= 5; i++) {
+          const y = canvasHeight - padding - (height / 5) * i;
+          progressCtx.beginPath();
+          progressCtx.moveTo(padding, y);
+          progressCtx.lineTo(canvasWidth - padding, y);
+          progressCtx.stroke();
+
+          const value = maxLoss * (i / 5);
+          progressCtx.fillText(value.toFixed(2), padding - 5, y + 3);
+        }
+
+        // Draw x grid lines and labels
+        progressCtx.textAlign = "center";
+        for (let i = 0; i <= 5; i++) {
+          const x = padding + (width / 5) * i;
+          progressCtx.beginPath();
+          progressCtx.moveTo(x, padding);
+          progressCtx.lineTo(x, canvasHeight - padding);
+          progressCtx.stroke();
+
+          const iter = Math.round(lossHistory.length * (i / 5));
+          progressCtx.fillText(iter, x, canvasHeight - padding + 15);
+        }
+
+        // Axis labels
+        progressCtx.fillText("Iterations", canvasWidth / 2, canvasHeight - 5);
+        progressCtx.save();
+        progressCtx.translate(15, canvasHeight / 2);
+        progressCtx.rotate(-Math.PI / 2);
+        progressCtx.fillText("Loss", 0, 0);
+        progressCtx.restore();
+
+        // Draw loss curve
+        if (lossHistory.length > 1) {
+          progressCtx.strokeStyle = "#667eea";
+          progressCtx.lineWidth = 3;
+          progressCtx.beginPath();
+          lossHistory.forEach((loss, i) => {
+            const x = padding + (i / (lossHistory.length - 1)) * width;
+            const y = canvasHeight - padding - (loss / maxLoss) * height;
+            if (i === 0) {
+              progressCtx.moveTo(x, y);
+            } else {
+              progressCtx.lineTo(x, y);
+            }
+          });
+          progressCtx.stroke();
+        }
+      }
+
+      // Update stats in DOM
+      function updateStats() {
+        const prediction = predict(currentX, currentY);
+        const loss = lossFunction(currentX, currentY);
+        const error = Math.abs(prediction - TARGET);
+        const loss1DVal = loss1D(currentTheta);
+
+        currentPredictionEl.textContent = currentTheta.toFixed(2);
+        currentErrorEl.textContent = loss1DVal.toFixed(3);
+
+        // Clamp loss to reasonable bounds for display
+        const clampedLoss = Math.min(loss, 1000); // Cap at 1000 for display
+        currentLossEl.textContent = clampedLoss.toFixed(3);
+        if (loss > 1000) {
+          currentLossEl.textContent += "+";
+        }
+
+        iterationEl.textContent = iterationCount;
+
+        // Calculate convergence percentage with proper bounds
+        const initialLoss = lossHistory[0] || loss;
+        let convergence = 0;
+
+        if (initialLoss > 0 && loss <= initialLoss) {
+          // Normal case: loss is decreasing
+          convergence = ((initialLoss - loss) / initialLoss) * 100;
+        } else if (initialLoss > 0 && loss > initialLoss) {
+          // Loss is increasing (diverging)
+          convergence = 0;
+        } else if (initialLoss <= 0) {
+          // Edge case: initial loss was 0 or negative
+          convergence = loss === 0 ? 100 : 0;
+        }
+
+        // Clamp convergence to sensible range: 0% to 100%
+        convergence = Math.max(0, Math.min(100, convergence));
+        convergenceEl.textContent = convergence.toFixed(1) + "%";
+
+        // Show status indicator for diverging cases
+        const statusIndicator = document.getElementById("statusIndicator");
+        const statusValue = document.getElementById("statusValue");
+
+        if (loss > initialLoss * 10) {
+          // Loss increased by 10x
+          statusIndicator.style.display = "block";
+          statusValue.textContent = "⚠️ Diverging";
+          statusValue.style.color = "#f44336";
+        } else if (loss > initialLoss * 2) {
+          // Loss increased by 2x
+          statusIndicator.style.display = "block";
+          statusValue.textContent = "⚠️ Unstable";
+          statusValue.style.color = "#ff9800";
+        } else if (loss < initialLoss * 0.1) {
+          // Loss decreased by 10x
+          statusIndicator.style.display = "block";
+          statusValue.textContent = "✅ Converging";
+          statusValue.style.color = "#4caf50";
+        } else {
+          statusIndicator.style.display = "none";
+        }
+      }
+
+      // Single update step
+      function update() {
+        const lr = parseFloat(learningRateSlider.value);
+
+        // Update neural network weights
+        const grad = gradient(currentX, currentY);
+        currentX -= lr * grad.dw1;
+        currentY -= lr * grad.dw2;
+
+        // Update 1D parameter
+        const grad1D = gradient1D(currentTheta);
+        currentTheta -= lr * grad1D;
+
+        // Keep theta in reasonable bounds for visualization
+        currentTheta = Math.max(-2, Math.min(6, currentTheta));
+
+        const loss = lossFunction(currentX, currentY);
+        const loss1DVal = loss1D(currentTheta);
+
+        path.push({ w1: currentX, w2: currentY });
+        path1D.push({ theta: currentTheta, loss: loss1DVal });
+        lossHistory.push(loss);
+        iterationCount++;
+
+        updateStats();
+        drawLossSurface();
+        drawProgress();
+
+        // Stop if converged (for neural network) or if oscillating/diverging
+        if (loss < 0.001 || iterationCount > 500 || loss > 10000) {
+          pauseAnimation();
+        }
+      }
+
+      // Start animation
+      function startAnimation() {
+        if (isRunning) return;
+        if (path.length === 0) reset();
+        isRunning = true;
+        startBtn.disabled = true;
+        pauseBtn.disabled = false;
+        const speed = parseInt(speedSlider.value);
+        interval = setInterval(update, speed);
+      }
+
+      // Pause animation
+      function pauseAnimation() {
+        if (!isRunning) return;
+        isRunning = false;
+        clearInterval(interval);
+        startBtn.disabled = false;
+        pauseBtn.disabled = true;
+      }
+
+      // Reset everything
+      function reset() {
+        pauseAnimation();
+        currentX = parseFloat(startXSlider.value);
+        currentY = parseFloat(startYSlider.value);
+
+        // Set 1D parameter based on a simple mapping from 2D space
+        // Map from 2D neural network space to 1D parameter space for visualization
+        currentTheta = parseFloat(startXSlider.value);
+
+        path = [{ w1: currentX, w2: currentY }];
+        path1D = [{ theta: currentTheta, loss: loss1D(currentTheta) }];
+        lossHistory = [lossFunction(currentX, currentY)];
+        iterationCount = 0;
+        updateStats();
+        drawLossSurface();
+        drawProgress();
+      }
+
+      // Event listeners
+      window.addEventListener("load", () => {
+        initCanvases();
+        reset();
+
+        learningRateSlider.addEventListener("input", () => {
+          document.getElementById("learningRateValue").textContent = parseFloat(
+            learningRateSlider.value
+          ).toFixed(2);
+        });
+
+        startXSlider.addEventListener("input", () => {
+          document.getElementById("startXValue").textContent = parseFloat(
+            startXSlider.value
+          ).toFixed(1);
+          if (!isRunning) {
+            currentTheta = parseFloat(startXSlider.value);
+            reset();
+          }
+        });
+
+        startYSlider.addEventListener("input", () => {
+          document.getElementById("startYValue").textContent = parseFloat(
+            startYSlider.value
+          ).toFixed(1);
+          if (!isRunning) reset();
+        });
+
+        speedSlider.addEventListener("input", () => {
+          document.getElementById("speedValue").textContent =
+            speedSlider.value + "ms";
+          if (isRunning) {
+            clearInterval(interval);
+            interval = setInterval(update, parseInt(speedSlider.value));
+          }
+        });
+
+        startBtn.addEventListener("click", startAnimation);
+        pauseBtn.addEventListener("click", pauseAnimation);
+        resetBtn.addEventListener("click", reset);
+        stepBtn.addEventListener("click", () => {
+          if (path.length === 0) reset();
+          if (!isRunning) update();
+        });
+      });
+
+      // Handle resize
+      window.addEventListener("resize", () => {
+        initCanvases();
+        drawLossSurface();
+        drawProgress();
+      });
+    </script>
+  </body>
+</html>
